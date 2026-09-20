@@ -1,0 +1,1249 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Range Match</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* ---------- tokens: light is the base, both dark scopes redefine ---------- */
+:root{
+  color-scheme: light;
+  --plane:#f1f4f6;
+  --surface:#fdfdfd;
+  --surface-2:#f7f9fa;
+  --ink:#0e1418;
+  --ink-2:#4a565e;
+  --ink-muted:#78858d;
+  --line:#dfe4e8;
+  --rule:#c6ced4;
+  --accent:#1c5cab;
+  --accent-ink:#ffffff;
+  --accent-soft:#e7effb;
+  --shadow:0 1px 2px rgba(14,20,24,.06), 0 8px 24px -16px rgba(14,20,24,.24);
+
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100;
+  --gbb-good:#86b6ef; --gbb-better:#2a78d6; --gbb-best:#104281;
+
+  --ok:#0ca30c; --warn:#fab219; --serious:#ec835a; --crit:#d03b3b;
+  --delta-up:#006300;
+
+  --grid:#e5e9ec;
+  --axis:#c6ced4;
+  --sans:"IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --plane:#0b0e10;
+    --surface:#15191c;
+    --surface-2:#1b2023;
+    --ink:#f1f4f6;
+    --ink-2:#b4bfc6;
+    --ink-muted:#87939b;
+    --line:#262d32;
+    --rule:#3a434a;
+    --accent:#5598e7;
+    --accent-ink:#08121f;
+    --accent-soft:#14283f;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 8px 24px -16px rgba(0,0,0,.8);
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+    --gbb-good:#184f95; --gbb-better:#3987e5; --gbb-best:#9ec5f4;
+    --delta-up:#0ca30c;
+    --grid:#23292e;
+    --axis:#3a434a;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --plane:#0b0e10;
+  --surface:#15191c;
+  --surface-2:#1b2023;
+  --ink:#f1f4f6;
+  --ink-2:#b4bfc6;
+  --ink-muted:#87939b;
+  --line:#262d32;
+  --rule:#3a434a;
+  --accent:#5598e7;
+  --accent-ink:#08121f;
+  --accent-soft:#14283f;
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 8px 24px -16px rgba(0,0,0,.8);
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+  --gbb-good:#184f95; --gbb-better:#3987e5; --gbb-best:#9ec5f4;
+  --delta-up:#0ca30c;
+  --grid:#23292e;
+  --axis:#3a434a;
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--plane);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:14px;
+  line-height:1.45;
+}
+h1,h2,h3{margin:0;text-wrap:balance;letter-spacing:-.011em}
+a{color:var(--accent)}
+button,select,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+.wrap{max-width:1280px;margin:0 auto;padding-inline:16px}
+
+/* ---------- masthead ---------- */
+.masthead{
+  position:sticky;top:env(safe-area-inset-top,0px);z-index:40;
+  background:color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter:saturate(1.4) blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.masthead__row{display:flex;align-items:center;gap:14px;padding-block:11px;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:10px;margin-right:auto;min-width:0}
+.brand__mark{
+  font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--accent-ink);background:var(--accent);
+  padding:4px 7px;border-radius:3px;white-space:nowrap;
+}
+.brand__name{font-size:17px;font-weight:600;letter-spacing:-.02em;white-space:nowrap}
+.brand__sub{font-size:12px;color:var(--ink-muted);white-space:nowrap}
+@media (max-width:820px){.brand__sub{display:none}}
+.iconbtn{
+  background:var(--surface-2);border:1px solid var(--line);border-radius:6px;
+  padding:6px 10px;font-size:12px;font-weight:500;cursor:pointer;color:var(--ink-2);
+}
+.iconbtn:hover{border-color:var(--rule);color:var(--ink)}
+
+/* ---------- sample-data banner ---------- */
+.databanner{
+  display:flex;gap:10px;align-items:flex-start;
+  padding:9px 12px;border-radius:7px;margin-block:12px;
+  font-size:12.5px;line-height:1.4;
+  border:1px solid var(--rule);background:var(--surface-2);color:var(--ink-2);
+}
+.databanner[data-kind="sample"]{
+  border-color:color-mix(in srgb, var(--warn) 55%, var(--line));
+  background:color-mix(in srgb, var(--warn) 9%, var(--surface));
+}
+.databanner__tag{
+  font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.1em;
+  text-transform:uppercase;padding:2px 6px;border-radius:3px;white-space:nowrap;
+  border:1px solid currentColor;flex:none;margin-top:1px;
+}
+.databanner[data-kind="sample"] .databanner__tag{color:#8a5b00}
+:root[data-theme="dark"] .databanner[data-kind="sample"] .databanner__tag,
+:root:not([data-theme="light"]) .databanner[data-kind="sample"] .databanner__tag{color:var(--warn)}
+.databanner strong{color:var(--ink)}
+
+/* ---------- filters ---------- */
+.filters{
+  display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;
+  padding:12px;border:1px solid var(--line);border-radius:9px;
+  background:var(--surface);box-shadow:var(--shadow);
+}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1 1 150px}
+.field__label{
+  font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-muted);
+}
+.field select,.field input{
+  width:100%;padding:7px 9px;border:1px solid var(--rule);border-radius:6px;
+  background:var(--surface-2);font-size:13px;
+}
+.filters__reset{flex:0 0 auto}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex;gap:2px;margin-block:14px 0;overflow-x:auto;scrollbar-width:thin;border-bottom:1px solid var(--line)}
+.tab{
+  border:0;background:none;padding:9px 13px;cursor:pointer;white-space:nowrap;
+  font-size:13px;font-weight:500;color:var(--ink-muted);
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.tab__count{
+  font-family:var(--mono);font-size:10.5px;margin-left:6px;padding:1px 5px;border-radius:9px;
+  background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2);
+}
+
+/* ---------- panels ---------- */
+.panels{padding-block:16px 40px}
+.panel{
+  background:var(--surface);border:1px solid var(--line);border-radius:9px;
+  padding:16px;margin-bottom:14px;box-shadow:var(--shadow);
+}
+.panel--flat{box-shadow:none;background:transparent;border:0;padding:0}
+.panel__head{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;margin-bottom:4px}
+.panel__title{font-size:14.5px;font-weight:600}
+.panel__note{font-size:12px;color:var(--ink-muted);margin:0 0 14px}
+.panel__note--tight{margin-bottom:8px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.grid2>.panel{margin-bottom:0}
+
+/* ---------- KPI tiles ---------- */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.tile{background:var(--surface);padding:13px 14px 12px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.tile__label{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-muted)}
+.tile__value{font-size:24px;font-weight:600;letter-spacing:-.025em;line-height:1.1}
+.tile__deltas{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11.5px;color:var(--ink-2);margin-top:2px}
+.tile__delta{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.tile__delta b{font-weight:600;font-variant-numeric:tabular-nums}
+.tile__delta span{color:var(--ink-muted)}
+.arrow{font-family:var(--mono);font-size:11px}
+.tile__spark{margin-top:6px}
+
+/* ---------- tables ---------- */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{
+  position:sticky;top:0;background:var(--surface-2);z-index:1;
+  font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-muted);font-weight:500;white-space:nowrap;
+}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--surface-2)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.sku{font-family:var(--mono);font-size:11px;color:var(--ink-muted);display:block}
+.empty{padding:22px 14px;text-align:center;color:var(--ink-muted);font-size:13px}
+
+/* ---------- chips ---------- */
+.chip{
+  display:inline-flex;align-items:center;gap:5px;white-space:nowrap;
+  font-size:11px;font-weight:500;padding:2px 7px;border-radius:11px;
+  border:1px solid var(--line);background:var(--surface-2);color:var(--ink-2);
+}
+.chip__dot{width:7px;height:7px;border-radius:50%;flex:none;background:currentColor}
+.chip--ok{color:#046d04;border-color:color-mix(in srgb,var(--ok) 45%,var(--line))}
+.chip--warn{color:#7a5400;border-color:color-mix(in srgb,var(--warn) 55%,var(--line))}
+.chip--serious{color:#9c4416;border-color:color-mix(in srgb,var(--serious) 55%,var(--line))}
+.chip--crit{color:#9d2020;border-color:color-mix(in srgb,var(--crit) 45%,var(--line))}
+:root[data-theme="dark"] .chip--ok,:root:not([data-theme="light"]) .chip--ok{color:var(--ok)}
+:root[data-theme="dark"] .chip--warn,:root:not([data-theme="light"]) .chip--warn{color:var(--warn)}
+:root[data-theme="dark"] .chip--serious,:root:not([data-theme="light"]) .chip--serious{color:var(--serious)}
+:root[data-theme="dark"] .chip--crit,:root:not([data-theme="light"]) .chip--crit{color:var(--crit)}
+.chip--gbb{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+.swatch{width:9px;height:9px;border-radius:2px;flex:none;display:inline-block}
+
+/* ---------- legend ---------- */
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0 10px;font-size:11.5px;color:var(--ink-2)}
+.legend__item{display:inline-flex;align-items:center;gap:6px}
+.legend__key{width:10px;height:10px;border-radius:2px;flex:none}
+
+/* ---------- charts ---------- */
+.chartbox{position:relative}
+svg.chart{display:block;width:100%;height:auto;overflow:visible}
+svg.chart text{font-family:var(--sans);fill:var(--ink-muted)}
+.tt{
+  position:absolute;pointer-events:none;z-index:20;opacity:0;transform:translate(-50%,-115%);
+  background:var(--surface);border:1px solid var(--rule);border-radius:7px;
+  padding:7px 9px;font-size:11.5px;line-height:1.5;box-shadow:var(--shadow);
+  min-width:130px;transition:opacity .09s;
+}
+.tt[data-show="1"]{opacity:1}
+.tt b{font-weight:600}
+.tt__row{display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums}
+.tt__row span:first-child{display:inline-flex;align-items:center;gap:5px;color:var(--ink-2)}
+
+/* ---------- source stamp ---------- */
+.stamp{
+  font-family:var(--mono);font-size:10.5px;color:var(--ink-muted);
+  border-top:1px dashed var(--line);padding-top:8px;margin-top:12px;
+  display:flex;flex-wrap:wrap;gap:4px 14px;
+}
+
+/* ---------- diagnosis ---------- */
+.trigger{
+  border:1px solid var(--line);border-left:3px solid var(--rule);border-radius:7px;
+  background:var(--surface);padding:12px 14px;margin-bottom:10px;
+}
+.trigger[data-sev="crit"]{border-left-color:var(--crit)}
+.trigger[data-sev="serious"]{border-left-color:var(--serious)}
+.trigger[data-sev="warn"]{border-left-color:var(--warn)}
+.trigger__head{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:5px}
+.trigger__name{font-weight:600;font-size:13.5px}
+.trigger__why{font-size:12.5px;color:var(--ink-2);margin:0 0 8px}
+.trigger__facts{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:11.5px;color:var(--ink-muted);font-variant-numeric:tabular-nums}
+.trigger__facts b{color:var(--ink);font-weight:600}
+.alert{
+  display:flex;gap:9px;align-items:flex-start;margin-block:12px;
+  border:1px solid color-mix(in srgb,var(--crit) 45%,var(--line));
+  background:color-mix(in srgb,var(--crit) 7%,var(--surface));
+  border-radius:7px;padding:10px 12px;font-size:12.5px;color:var(--ink);
+}
+.alert__icon{flex:none;font-weight:700;color:var(--crit);font-family:var(--mono)}
+.causes{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px;margin-top:12px}
+.cause{border:1px solid var(--line);border-radius:6px;padding:9px 10px;background:var(--surface-2)}
+.cause__name{font-size:12.5px;font-weight:600;margin-bottom:4px}
+.cause__meta{font-size:11.5px;color:var(--ink-2);margin:0 0 6px}
+.cause select{width:100%;padding:5px 7px;border:1px solid var(--rule);border-radius:5px;background:var(--surface);font-size:12px}
+
+/* ---------- forms / data tab ---------- */
+.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.formgrid textarea{min-height:72px;resize:vertical}
+.formgrid input,.formgrid textarea,.formgrid select{
+  width:100%;padding:7px 9px;border:1px solid var(--rule);border-radius:6px;background:var(--surface-2);font-size:13px;
+}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.btn{
+  border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);
+  padding:8px 14px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;
+}
+.btn:hover{filter:brightness(1.08)}
+.btn--ghost{background:var(--surface-2);color:var(--ink-2);border-color:var(--rule)}
+.btn--ghost:hover{color:var(--ink);border-color:var(--ink-muted);filter:none}
+.btn--danger{background:var(--surface-2);color:var(--crit);border-color:color-mix(in srgb,var(--crit) 45%,var(--line))}
+.hint{font-size:11.5px;color:var(--ink-muted);margin:6px 0 0}
+.check{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;color:var(--ink-2)}
+.check input{margin-top:2px;flex:none;width:auto}
+
+/* ---------- misc ---------- */
+.kv{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:12.5px;margin:0}
+.kv dt{color:var(--ink-muted);white-space:nowrap}
+.kv dd{margin:0;color:var(--ink)}
+.caveat{
+  font-size:12px;color:var(--ink-2);background:var(--surface-2);
+  border:1px solid var(--line);border-left:3px solid var(--accent);
+  border-radius:6px;padding:9px 11px;margin-block:10px;
+}
+.linklike{
+  background:none;border:0;padding:0;font:inherit;color:var(--accent);
+  text-decoration:underline;cursor:pointer;
+}
+.footer{padding-block:20px 34px;font-size:11.5px;color:var(--ink-muted);border-top:1px solid var(--line)}
+.footer p{margin:0 0 5px;max-width:74ch}
+
+@media print{
+  .masthead,.tabs,.filters,.btnrow,.iconbtn{display:none!important}
+  body{background:#fff}
+  .panel{break-inside:avoid;box-shadow:none;border-color:#ccc}
+}
+</style><style>
+/* ---------- needs form ---------- */
+.needs{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.needs .field select,.needs .field input{background:var(--surface)}
+.needs__span{grid-column:1/-1}
+.seg{display:flex;flex-wrap:wrap;gap:4px}
+.seg button{
+  border:1px solid var(--rule);background:var(--surface);color:var(--ink-2);
+  padding:6px 11px;border-radius:6px;font-size:12.5px;cursor:pointer;
+}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+
+/* ---------- results ---------- */
+.results{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:12px;margin-top:4px}
+.card{
+  border:1px solid var(--line);border-radius:9px;background:var(--surface);
+  padding:14px;display:flex;flex-direction:column;gap:9px;box-shadow:var(--shadow);
+}
+.card[data-fit="partial"]{border-style:dashed}
+.card[data-fit="none"]{opacity:.72}
+.card__top{display:flex;gap:9px;align-items:flex-start;flex-wrap:wrap}
+.card__name{font-size:14.5px;font-weight:600;line-height:1.25;flex:1 1 170px;min-width:0}
+.card__why{font-size:12.5px;color:var(--ink-2);margin:0}
+.card__why b{color:var(--ink);font-weight:600}
+.card__specs{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:6px 10px;
+  font-size:11.5px;font-variant-numeric:tabular-nums;
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding-block:9px;
+}
+.card__specs span{display:flex;flex-direction:column}
+.card__specs u{text-decoration:none;color:var(--ink-muted);font-size:10px;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.card__specs b{font-weight:600}
+.card__checks{display:flex;flex-direction:column;gap:3px;font-size:12px;margin:0;padding:0;list-style:none}
+.card__checks li{display:flex;gap:7px;align-items:flex-start}
+.card__checks i{font-style:normal;font-family:var(--mono);font-weight:600;flex:none;width:13px}
+.card__checks li[data-r="yes"] i{color:var(--ok)}
+.card__checks li[data-r="no"] i{color:var(--crit)}
+.card__checks li[data-r="na"] i{color:var(--ink-muted)}
+.card__checks li[data-r="no"]{color:var(--ink)}
+.card__checks li[data-r="na"]{color:var(--ink-muted)}
+.card__foot{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:auto}
+.card__price{font-size:16px;font-weight:600;letter-spacing:-.02em;margin-right:auto;font-variant-numeric:tabular-nums}
+.pick{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;cursor:pointer;color:var(--ink-2)}
+.pick input{width:auto;accent-color:var(--accent)}
+
+/* ---------- fit badge ---------- */
+.fit{
+  display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex:none;
+  font-size:11px;font-weight:600;padding:3px 8px;border-radius:11px;border:1px solid;
+}
+.fit--full{color:#046d04;border-color:color-mix(in srgb,var(--ok) 45%,var(--line));background:color-mix(in srgb,var(--ok) 8%,var(--surface))}
+.fit--partial{color:#8a5b00;border-color:color-mix(in srgb,var(--warn) 55%,var(--line));background:color-mix(in srgb,var(--warn) 10%,var(--surface))}
+.fit--none{color:#9d2020;border-color:color-mix(in srgb,var(--crit) 40%,var(--line));background:color-mix(in srgb,var(--crit) 6%,var(--surface))}
+:root[data-theme="dark"] .fit--full,:root:not([data-theme="light"]) .fit--full{color:var(--ok)}
+:root[data-theme="dark"] .fit--partial,:root:not([data-theme="light"]) .fit--partial{color:var(--warn)}
+:root[data-theme="dark"] .fit--none,:root:not([data-theme="light"]) .fit--none{color:var(--crit)}
+
+/* ---------- gap notice ---------- */
+.gap{
+  border:1px solid color-mix(in srgb,var(--crit) 40%,var(--line));
+  background:color-mix(in srgb,var(--crit) 6%,var(--surface));
+  border-radius:9px;padding:14px;margin-bottom:14px;
+}
+.gap h3{font-size:14px;font-weight:600;margin-bottom:6px}
+.gap p{margin:0 0 8px;font-size:12.5px;color:var(--ink-2);max-width:74ch}
+.gap ul{margin:0 0 8px;padding-left:18px;font-size:12.5px}
+
+/* ---------- compare tray ---------- */
+.tray{
+  position:sticky;bottom:0;z-index:30;margin-top:14px;
+  background:var(--surface);border:1px solid var(--rule);border-radius:9px;
+  padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));
+  display:flex;gap:10px;align-items:center;flex-wrap:wrap;box-shadow:0 -6px 20px -14px rgba(0,0,0,.5);
+}
+.tray__label{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-muted)}
+.tray__items{display:flex;gap:6px;flex-wrap:wrap;flex:1 1 200px;min-width:0}
+.tray__chip{
+  display:inline-flex;align-items:center;gap:6px;font-size:12px;
+  border:1px solid var(--line);background:var(--surface-2);border-radius:14px;padding:3px 5px 3px 9px;
+}
+.tray__chip button{border:0;background:none;color:var(--ink-muted);cursor:pointer;font-size:14px;line-height:1;padding:0 3px}
+.tray__chip button:hover{color:var(--crit)}
+
+/* ---------- compare table ---------- */
+.cmp th:first-child,.cmp td:first-child{
+  position:sticky;left:0;background:var(--surface);z-index:2;
+  border-right:1px solid var(--line);min-width:160px;
+}
+.cmp thead th:first-child{z-index:3;background:var(--surface-2)}
+.cmp td{min-width:190px}
+.cmp tr[data-diff="1"] td{background:color-mix(in srgb,var(--accent) 5%,transparent)}
+.cmp tr[data-diff="1"] td:first-child{background:color-mix(in srgb,var(--accent) 5%,var(--surface))}
+.cmp .best{font-weight:600}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap masthead__row">
+    <div class="brand">
+      <span class="brand__mark">Match</span>
+      <span class="brand__name">Range Match</span>
+      <span class="brand__sub">Mobility Aids &middot; Manual Wheelchairs &middot; Cushions &middot; Bedroom</span>
+    </div>
+    <button class="iconbtn" id="printBtn" type="button">Print</button>
+    <button class="iconbtn" id="themeBtn" type="button" aria-label="Switch theme">Theme</button>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="databanner" id="dataBanner" data-kind="sample">
+    <span class="databanner__tag" id="bannerTag">Sample specifications</span>
+    <span id="bannerText">
+      <strong>The specifications and stock figures here are sample values, not the Aidacare catalogue.</strong>
+      They are in place so the matching, the comparison and the gap rules can be checked.
+      Load the real catalogue on the <button class="linklike" data-goto="data" type="button">Catalogue</button> tab before quoting anything to a customer.
+    </span>
+  </div>
+
+  <nav class="tabs" role="tablist" aria-label="Views">
+    <button class="tab" role="tab" data-view="match" aria-selected="true">What the client needs</button>
+    <button class="tab" role="tab" data-view="compare" aria-selected="false">Compare<span class="tab__count" id="cntCmp">0</span></button>
+    <button class="tab" role="tab" data-view="range" aria-selected="false">Full range</button>
+    <button class="tab" role="tab" data-view="showroom" aria-selected="false">In the showroom</button>
+    <button class="tab" role="tab" data-view="data" aria-selected="false">Catalogue</button>
+  </nav>
+
+  <div class="panels">
+    <section id="view-match" role="tabpanel"></section>
+    <section id="view-compare" role="tabpanel" hidden></section>
+    <section id="view-range" role="tabpanel" hidden></section>
+    <section id="view-showroom" role="tabpanel" hidden></section>
+    <section id="view-data" role="tabpanel" hidden></section>
+  </div>
+
+  <div class="tray" id="tray" hidden>
+    <span class="tray__label">Comparing</span>
+    <span class="tray__items" id="trayItems"></span>
+    <button class="btn" id="goCompare" type="button">Compare side by side</button>
+    <button class="btn btn--ghost" id="clearTray" type="button">Clear</button>
+  </div>
+
+  <footer class="footer">
+    <p><strong>What this tool does.</strong> It takes what the client in front of you needs, checks it against the controlled Good Better Best range, and says plainly which products meet every requirement, which fall short and on what, and where the range has nothing that fits.</p>
+    <p><strong>What it does not do.</strong> It does not replace a clinical assessment, a prescription or an occupational therapy recommendation. Safe working load, seat width and pressure care selection must be confirmed against the current product documentation before an order is placed.</p>
+    <p><strong>Availability.</strong> Display and stock status is recorded per showroom and is only as current as the last update shown on the Catalogue tab.</p>
+  </footer>
+</main>
+
+<script>
+"use strict";
+
+/* ============================================================
+   Range Match
+   Takes what the client needs, checks it against the controlled
+   Good Better Best range, and says which products meet every
+   requirement, which fall short and on what, and where the range
+   has nothing that fits.
+
+   No value in this file is Aidacare catalogue data. Sample
+   specifications are generated and are labelled as sample
+   everywhere they appear.
+   ============================================================ */
+
+const CATEGORIES = [
+  { id:"MA", name:"Mobility Aids" },
+  { id:"MW", name:"Manual Wheelchairs" },
+  { id:"CU", name:"Cushions" },
+  { id:"BD", name:"Bedroom" }
+];
+const CATNAME = Object.fromEntries(CATEGORIES.map(c=>[c.id,c.name]));
+const GBB = ["Good","Better","Best"];
+const GBBVAR = { Good:"--gbb-good", Better:"--gbb-better", Best:"--gbb-best" };
+const GBBORDER = { Good:0, Better:1, Best:2 };
+const RISK = { Low:0, Moderate:1, High:2 };
+
+const SHOWROOMS = [
+  { id:"S01", name:"Showroom 01", profile:"Metro" },
+  { id:"S02", name:"Showroom 02", profile:"Metro" },
+  { id:"S03", name:"Showroom 03", profile:"Regional" },
+  { id:"S04", name:"Showroom 04", profile:"Regional" }
+];
+
+/* Controlled range. Each position states the customer or clinical need,
+   the functional difference and the customer value. Price alone never
+   sets a position. Limitations are stated, not hidden. */
+const PRODUCTS = [
+  {sku:"SMPL-MA-101",cat:"MA",family:"Seat Walkers",name:"Seat Walker Compact 4 Wheel",gbb:"Good",price:229,
+   swl:100,weight:6.4,seatW:430,folds:true,env:"Indoor",propel:"n/a",support:"Hands",risk:null,
+   need:"Short indoor distances with a rest seat",diff:"Narrow frame, lightest fold",value:"Fits narrow hallways and a small car boot",
+   limits:"Small wheels are not suited to gravel, grass or high kerbs",req:"Required"},
+  {sku:"SMPL-MA-102",cat:"MA",family:"Seat Walkers",name:"Seat Walker 4 Wheel Steel",gbb:"Better",price:319,
+   swl:135,weight:9.8,seatW:460,folds:true,env:"Both",propel:"n/a",support:"Hands",risk:null,
+   need:"Daily indoor and outdoor use",diff:"Larger wheels, higher weight capacity",value:"Handles footpaths and kerbs",
+   limits:"Heavier to lift into a car than the alloy model",req:"Required"},
+  {sku:"SMPL-MA-103",cat:"MA",family:"Seat Walkers",name:"Seat Walker 4 Wheel Alloy",gbb:"Best",price:479,
+   swl:135,weight:7.1,seatW:460,folds:true,env:"Both",propel:"n/a",support:"Hands",risk:null,
+   need:"Active user outdoors who lifts the walker often",diff:"Alloy frame, lowest weight at full capacity",value:"Can be lifted into a car unaided",
+   limits:"Higher price than the steel model for the same seat width",req:"Required"},
+  {sku:"SMPL-MA-104",cat:"MA",family:"Seat Walkers",name:"Bariatric Seat Walker",gbb:"Best",price:869,
+   swl:230,weight:14.6,seatW:560,folds:true,env:"Both",propel:"n/a",support:"Hands",risk:null,
+   need:"Higher safe working load and a wider seat",diff:"Reinforced frame, widened seat and handgrip span",value:"Supports users a standard walker cannot carry",
+   limits:"Too heavy for most users to lift into a car unaided",req:"Required"},
+  {sku:"SMPL-MA-201",cat:"MA",family:"Walking Frames",name:"Walking Frame 2 Wheel",gbb:"Good",price:119,
+   swl:135,weight:2.9,seatW:null,folds:true,env:"Indoor",propel:"n/a",support:"Hands",risk:null,
+   need:"Indoor support with high stability",diff:"Front wheels only, rear stoppers",value:"Stable and simple to use",
+   limits:"No seat, so it does not suit a user who needs to rest",req:"Required"},
+  {sku:"SMPL-MA-202",cat:"MA",family:"Walking Frames",name:"Forearm Support Walker",gbb:"Best",price:729,
+   swl:135,weight:13.2,seatW:null,folds:true,env:"Both",propel:"n/a",support:"Forearms",risk:null,
+   need:"Cannot bear weight through the wrists or hands",diff:"Forearm platforms with adjustable angle and height",value:"Keeps a user walking when a standard frame cannot",
+   limits:"Bulky to transport and needs a setup appointment",req:"Required"},
+  {sku:"SMPL-MA-301",cat:"MA",family:"Walking Canes",name:"Walking Cane Folding",gbb:"Good",price:39,
+   swl:100,weight:0.4,seatW:null,folds:true,env:"Both",propel:"n/a",support:"Hands",risk:null,
+   need:"Occasional light support that packs away",diff:"Four section fold",value:"Fits a handbag, so it is always with the user",
+   limits:"Light support only, not for a user at risk of falls",req:"Required"},
+  {sku:"SMPL-MA-302",cat:"MA",family:"Walking Canes",name:"Walking Cane Adjustable",gbb:"Better",price:59,
+   swl:120,weight:0.5,seatW:null,folds:false,env:"Both",propel:"n/a",support:"Hands",risk:null,
+   need:"Everyday support set to the correct height",diff:"Wide height range and moulded grip",value:"Set to the user rather than close enough",
+   limits:"Does not fold, so it does not stow in a bag",req:"Required"},
+  {sku:"SMPL-MA-303",cat:"MA",family:"Walking Canes",name:"Quad Cane Small Base",gbb:"Better",price:69,
+   swl:120,weight:1.1,seatW:null,folds:false,env:"Indoor",propel:"n/a",support:"Hands",risk:null,
+   need:"Needs a cane that stands unaided",diff:"Four point base",value:"Stays upright, so transfers are more confident",
+   limits:"The base catches on uneven ground outdoors",req:"Optional"},
+
+  {sku:"SMPL-MW-101",cat:"MW",family:"Transit",name:"Transit Wheelchair 18in",gbb:"Good",price:349,
+   swl:115,weight:13.4,seatW:455,folds:true,env:"Both",propel:"Attendant",support:"Seated",risk:null,
+   need:"Pushed by a carer for occasional outings",diff:"Steel frame, fixed arms and footplates",value:"Lowest entry point for carer pushed use",
+   limits:"The user cannot self propel, and the frame is heavy to load",req:"Required"},
+  {sku:"SMPL-MW-102",cat:"MW",family:"Transit",name:"Transit Lightweight Alloy",gbb:"Better",price:589,
+   swl:115,weight:9.2,seatW:455,folds:true,env:"Both",propel:"Attendant",support:"Seated",risk:null,
+   need:"A carer loads the chair into a car regularly",diff:"Alloy frame with quick release parts",value:"A carer can load it without help",
+   limits:"Still attendant propelled only",req:"Required"},
+  {sku:"SMPL-MW-201",cat:"MW",family:"Self Propel",name:"Self Propel Steel 18in",gbb:"Good",price:449,
+   swl:115,weight:16.8,seatW:455,folds:true,env:"Indoor",propel:"Self",support:"Seated",risk:null,
+   need:"User propels indoors over limited distance",diff:"Steel frame, standard rims",value:"Independence at the lowest cost",
+   limits:"Heavy to push over distance and hard to load into a car",req:"Required"},
+  {sku:"SMPL-MW-202",cat:"MW",family:"Self Propel",name:"Self Propel Lightweight Alloy",gbb:"Better",price:749,
+   swl:125,weight:11.6,seatW:455,folds:true,env:"Both",propel:"Self",support:"Seated",risk:null,
+   need:"Daily independent use, transported often",diff:"Alloy frame with adjustable rear axle",value:"Easier push and easier transport",
+   limits:"Seat depth and back angle are not adjustable",req:"Required"},
+  {sku:"SMPL-MW-203",cat:"MW",family:"Self Propel",name:"Self Propel Premium Folding",gbb:"Best",price:1290,
+   swl:125,weight:10.4,seatW:455,folds:true,env:"Both",propel:"Self",support:"Seated",risk:null,
+   need:"Full time user whose seating is set to the person",diff:"Adjustable seat depth, backrest angle and axle position",value:"Configured to the user rather than a fixed seat",
+   limits:"Needs a setup appointment, and lead time is longer",req:"Required"},
+  {sku:"SMPL-MW-301",cat:"MW",family:"Bariatric",name:"Bariatric Self Propel 24in",gbb:"Best",price:1450,
+   swl:230,weight:22.5,seatW:610,folds:true,env:"Both",propel:"Self",support:"Seated",risk:null,
+   need:"Higher safe working load and a wider seat",diff:"Reinforced frame and widened seat",value:"Suits users a standard chair cannot carry",
+   limits:"Will not pass through a narrow doorway, and it is heavy to load",req:"Required"},
+
+  {sku:"SMPL-CU-101",cat:"CU",family:"Pressure Care",name:"Foam Contour Cushion",gbb:"Good",price:129,
+   swl:120,weight:0.9,seatW:430,folds:false,env:"Both",propel:"n/a",support:"Seated",risk:"Low",
+   need:"Low pressure injury risk with comfort seating",diff:"Contoured high resilience foam",value:"Everyday comfort and basic offloading",
+   limits:"Not suitable where skin integrity is already at risk",req:"Required"},
+  {sku:"SMPL-CU-102",cat:"CU",family:"Pressure Care",name:"Gel and Foam Hybrid Cushion",gbb:"Better",price:289,
+   swl:140,weight:1.8,seatW:455,folds:false,env:"Both",propel:"n/a",support:"Seated",risk:"Moderate",
+   need:"Moderate risk, seated for longer periods",diff:"Gel insert over contoured foam",value:"Redistributes pressure without an air pump",
+   limits:"Heavier than foam, and the gel layer holds warmth",req:"Required"},
+  {sku:"SMPL-CU-103",cat:"CU",family:"Pressure Care",name:"Air Cell Cushion",gbb:"Best",price:640,
+   swl:150,weight:1.2,seatW:455,folds:false,env:"Both",propel:"n/a",support:"Seated",risk:"High",
+   need:"High pressure injury risk, full time sitting",diff:"Adjustable air cells, immersion set to the user",value:"Highest offloading where skin integrity is at risk",
+   limits:"Needs checking and reinflating, and it can be punctured",req:"Required"},
+  {sku:"SMPL-CU-104",cat:"CU",family:"Pressure Care",name:"Bariatric Foam Cushion",gbb:"Better",price:239,
+   swl:250,weight:2.4,seatW:610,folds:false,env:"Both",propel:"n/a",support:"Seated",risk:"Low",
+   need:"Higher safe working load with a wider seat",diff:"High density foam across a wider base",value:"Supports a heavier user on a wider chair",
+   limits:"Low risk offloading only, despite the higher capacity",req:"Required"},
+  {sku:"SMPL-CU-201",cat:"CU",family:"Comfort",name:"Wedge Cushion",gbb:"Good",price:79,
+   swl:110,weight:0.6,seatW:400,folds:false,env:"Indoor",propel:"n/a",support:"Seated",risk:"Low",
+   need:"Posture support when sitting",diff:"Angled foam wedge",value:"Improves sitting posture in an existing chair",
+   limits:"Comfort product, not a pressure care cushion",req:"Optional"},
+  {sku:"SMPL-CU-202",cat:"CU",family:"Comfort",name:"Ring Cushion",gbb:"Good",price:49,
+   swl:110,weight:0.4,seatW:400,folds:false,env:"Indoor",propel:"n/a",support:"Seated",risk:"Low",
+   need:"Localised comfort after surgery",diff:"Open centre design",value:"Relieves a specific contact point",
+   limits:"Can increase pressure around the opening if used long term",req:"Optional"},
+
+  {sku:"SMPL-BD-101",cat:"BD",family:"Bed Accessories",name:"Bed Stick",gbb:"Good",price:89,
+   swl:100,weight:1.6,seatW:null,folds:false,env:"Indoor",propel:"n/a",support:"Hands",risk:null,
+   need:"Help to sit up and get out of bed",diff:"Single pole with a mattress strap fixing",value:"Simple bed transfer support",
+   limits:"Not suitable where there is any entrapment risk",req:"Required"},
+  {sku:"SMPL-BD-102",cat:"BD",family:"Bed Accessories",name:"Bed Lever Adjustable",gbb:"Better",price:159,
+   swl:120,weight:3.1,seatW:null,folds:false,env:"Indoor",propel:"n/a",support:"Hands",risk:null,
+   need:"Needs a set grip height and position",diff:"Adjustable height with a swing away arm",value:"Set to the user and moves out of the way",
+   limits:"Needs a compatible bed frame",req:"Required"},
+  {sku:"SMPL-BD-103",cat:"BD",family:"Bed Accessories",name:"Bed Rail Full Length",gbb:"Best",price:319,
+   swl:140,weight:6.8,seatW:null,folds:false,env:"Indoor",propel:"n/a",support:"Hands",risk:null,
+   need:"Continuous support along the bed edge",diff:"Full length rail with a wider fitting range",value:"Support along the whole transfer path",
+   limits:"Entrapment risk must be assessed against the mattress and frame",req:"Required"},
+  {sku:"SMPL-BD-201",cat:"BD",family:"Bed Furniture",name:"Overbed Table",gbb:"Good",price:189,
+   swl:25,weight:9.4,seatW:null,folds:false,env:"Indoor",propel:"n/a",support:"n/a",risk:null,
+   need:"Eating and activity while in bed",diff:"Height adjustable top on castors",value:"Brings the surface to the user",
+   limits:"The stated load is for the table top, not for body weight",req:"Required"},
+  {sku:"SMPL-BD-202",cat:"BD",family:"Bed Furniture",name:"Bedside Cabinet",gbb:"Better",price:249,
+   swl:20,weight:12.2,seatW:null,folds:false,env:"Indoor",propel:"n/a",support:"n/a",risk:null,
+   need:"Storage within reach of the bed",diff:"Lockable drawer on castors",value:"Keeps essentials reachable and secure",
+   limits:"Not a transfer support and must not be leant on",req:"Optional"}
+];
+const PBYSKU = Object.fromEntries(PRODUCTS.map(p=>[p.sku,p]));
+
+/* ---------- sample availability, deterministic ---------- */
+function hash32(str){ let h=2166136261; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619);} return h>>>0; }
+function rng(seed){ let a=seed>>>0; return function(){ a|=0; a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
+
+const NOT_DISPLAYED = { S04:["SMPL-MW-301","SMPL-MA-104"], S03:["SMPL-CU-103","SMPL-MA-202"], S02:["SMPL-CU-104"], S01:["SMPL-MA-303"] };
+const ON_ORDER = { S01:["SMPL-MA-202"], S03:["SMPL-MW-203"], S04:["SMPL-CU-103"] };
+
+function buildAvailability(){
+  const out = {};
+  SHOWROOMS.forEach(s=>{
+    out[s.id] = {};
+    PRODUCTS.forEach(p=>{
+      const r = rng(hash32("av"+s.id+p.sku));
+      const displayed = !(NOT_DISPLAYED[s.id]||[]).includes(p.sku) && r() > 0.1;
+      const onOrder = (ON_ORDER[s.id]||[]).includes(p.sku);
+      out[s.id][p.sku] = {
+        displayed,
+        demoReady: displayed && r() > 0.2,
+        stock: onOrder ? "On order" : (r() > 0.86 ? "Low stock" : "In stock"),
+        fitted: Math.round(r() * (p.gbb === "Good" ? 26 : p.gbb === "Better" ? 15 : 7))
+      };
+    });
+  });
+  return out;
+}
+
+/* ---------- what the client needs ---------- */
+const BLANK_NEED = {
+  cat:"ALL", userWeight:"", seatWidth:"", env:"Any", transport:"Any",
+  propel:"Any", wrists:"Any", risk:"Any", budget:"", notes:""
+};
+
+const CRITERIA = [
+  { id:"weight", hard:true, label:"Safe working load",
+    active:n => +n.userWeight > 0,
+    applies:p => true,
+    test:(p,n) => p.swl >= +n.userWeight,
+    say:(p,n) => "rated to " + p.swl + " kg, client weight " + n.userWeight + " kg" },
+  { id:"seat", hard:true, label:"Seat width",
+    active:n => +n.seatWidth > 0,
+    applies:p => p.seatW != null,
+    test:(p,n) => p.seatW >= +n.seatWidth,
+    say:(p,n) => "seat " + p.seatW + " mm, client needs " + n.seatWidth + " mm" },
+  { id:"risk", hard:true, label:"Pressure injury risk",
+    active:n => n.risk !== "Any",
+    applies:p => p.risk != null,
+    test:(p,n) => RISK[p.risk] >= RISK[n.risk],
+    say:(p,n) => "rated for " + p.risk.toLowerCase() + " risk, client is " + n.risk.toLowerCase() + " risk" },
+  { id:"propel", hard:true, label:"Who propels the chair",
+    active:n => n.propel !== "Any",
+    applies:p => p.propel !== "n/a",
+    test:(p,n) => p.propel === n.propel,
+    say:p => p.propel === "Self" ? "self propelled" : "attendant propelled" },
+  { id:"wrists", hard:true, label:"Weight through hands and wrists",
+    active:n => n.wrists === "No",
+    applies:p => p.support === "Hands" || p.support === "Forearms",
+    test:p => p.support === "Forearms",
+    say:p => p.support === "Forearms" ? "takes weight through the forearms" : "loads the hands and wrists" },
+  { id:"env", hard:false, label:"Where it will be used",
+    active:n => n.env !== "Any",
+    applies:p => p.env !== "n/a",
+    test:(p,n) => n.env === "Both" ? p.env === "Both" : (p.env === "Both" || p.env === n.env),
+    say:p => "suited to " + p.env.toLowerCase() + " use" },
+  { id:"fold", hard:false, label:"Folds for transport",
+    active:n => n.transport !== "Any",
+    applies:p => p.cat === "MA" || p.cat === "MW",
+    test:p => p.folds === true,
+    say:p => p.folds ? "folds for transport" : "does not fold" },
+  { id:"lift", hard:false, label:"Lifted into a car unaided",
+    active:n => n.transport === "Lift",
+    applies:p => p.cat === "MA" || p.cat === "MW",
+    test:p => p.weight <= 12,
+    say:p => p.weight + " kg to lift, 12 kg is the practical limit" },
+  { id:"budget", hard:false, label:"Budget",
+    active:n => +n.budget > 0,
+    applies:p => true,
+    test:(p,n) => p.price <= +n.budget,
+    say:(p,n) => money(p.price) + " against a " + money(+n.budget) + " budget" }
+];
+
+function evaluate(p, need){
+  const checks = [];
+  let hardMiss = 0, softMiss = 0, met = 0;
+  CRITERIA.forEach(c=>{
+    if(!c.active(need)) return;
+    if(!c.applies(p)){ checks.push({ id:c.id, label:c.label, r:"na", detail:"Does not apply to this product" }); return; }
+    const ok = c.test(p, need);
+    if(ok) met++; else if(c.hard) hardMiss++; else softMiss++;
+    checks.push({ id:c.id, label:c.label, r:ok ? "yes" : "no", detail:c.say(p, need), hard:c.hard });
+  });
+  const fit = hardMiss > 0 ? "none" : (softMiss > 0 ? "partial" : "full");
+  return { product:p, checks, fit, hardMiss, softMiss, met };
+}
+
+function scope(need){
+  return PRODUCTS.filter(p => need.cat === "ALL" || p.cat === need.cat);
+}
+function assess(need){
+  const list = scope(need).map(p => evaluate(p, need));
+  const rank = { full:0, partial:1, none:2 };
+  list.sort((a,b)=>
+    rank[a.fit] - rank[b.fit] ||
+    a.hardMiss - b.hardMiss || a.softMiss - b.softMiss ||
+    GBBORDER[a.product.gbb] - GBBORDER[b.product.gbb] ||
+    a.product.price - b.product.price);
+  return list;
+}
+
+/* Which requirements nothing in the range can meet. This is the part that
+   answers "what we do not have", rather than quietly returning a short list. */
+function gaps(need, results){
+  const out = [];
+  CRITERIA.forEach(c=>{
+    if(!c.active(need)) return;
+    const applicable = results.filter(r => c.applies(r.product));
+    if(!applicable.length) return;
+    const passing = applicable.filter(r => c.test(r.product, need));
+    if(!passing.length){
+      const best = applicable.slice().sort((a,b)=>{
+        if(c.id === "weight") return b.product.swl - a.product.swl;
+        if(c.id === "seat") return b.product.seatW - a.product.seatW;
+        if(c.id === "risk") return RISK[b.product.risk] - RISK[a.product.risk];
+        if(c.id === "budget") return a.product.price - b.product.price;
+        if(c.id === "lift") return a.product.weight - b.product.weight;
+        return 0;
+      })[0];
+      out.push({ label:c.label, hard:c.hard, nearest:best ? best.product : null, detail:best ? c.say(best.product, need) : "" });
+    }
+  });
+  return out;
+}
+
+/* ---------- state ---------- */
+const LSKEY = "aidacare.rangematch.v1";
+const STATE = {
+  need: Object.assign({}, BLANK_NEED),
+  showroom:"S01",
+  tray:[],
+  view:"match",
+  avail: buildAvailability(),
+  meta:{ isSample:true, source:"Generated sample specifications", updated:"", note:"" }
+};
+function saveState(){
+  try{ localStorage.setItem(LSKEY, JSON.stringify({ need:STATE.need, showroom:STATE.showroom, tray:STATE.tray, meta:STATE.meta })); }catch(e){}
+}
+function loadState(){
+  try{
+    const raw = localStorage.getItem(LSKEY); if(!raw) return;
+    const s = JSON.parse(raw);
+    if(s.need) Object.assign(STATE.need, s.need);
+    if(s.showroom) STATE.showroom = s.showroom;
+    if(Array.isArray(s.tray)) STATE.tray = s.tray.filter(k => PBYSKU[k]);
+    if(s.meta) Object.assign(STATE.meta, s.meta);
+  }catch(e){}
+}
+
+/* ---------- formatting ---------- */
+const nf = new Intl.NumberFormat("en-AU");
+function money(v){ return (v==null||isNaN(v)) ? "n/a" : "$"+nf.format(Math.round(v)); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function av(sku){ return (STATE.avail[STATE.showroom] || {})[sku] || { displayed:false, demoReady:false, stock:"Unknown", fitted:0 }; }
+function gbbChip(g){ return '<span class="chip chip--gbb"><span class="swatch" style="background:var('+GBBVAR[g]+')"></span>'+g+'</span>'; }
+
+/* ---------- needs form ---------- */
+function sel(id, label, opts, val, span){
+  return '<label class="field'+(span?" needs__span":"")+'"><span class="field__label">'+esc(label)+'</span>'
+    + '<select id="'+id+'">'+opts.map(o=>'<option value="'+esc(o.v)+'"'+(String(o.v)===String(val)?" selected":"")+'>'+esc(o.l)+'</option>').join("")+'</select></label>';
+}
+function num(id, label, val, ph){
+  return '<label class="field"><span class="field__label">'+esc(label)+'</span>'
+    + '<input id="'+id+'" type="number" min="0" step="1" value="'+esc(val)+'" placeholder="'+esc(ph)+'"></label>';
+}
+
+function needsForm(){
+  const n = STATE.need;
+  return '<div class="needs">'
+    + sel("n_cat","What are you fitting", [{v:"ALL",l:"Anything in my categories"}].concat(CATEGORIES.map(c=>({v:c.id,l:c.name}))), n.cat)
+    + sel("n_showroom","Checking stock at", SHOWROOMS.map(s=>({v:s.id,l:s.name+" ("+s.profile+")"})), STATE.showroom)
+    + num("n_weight","Client weight (kg)", n.userWeight, "e.g. 140")
+    + num("n_seatWidth","Seat width needed (mm)", n.seatWidth, "e.g. 500")
+    + sel("n_env","Where it will be used", [{v:"Any",l:"Not a deciding factor"},{v:"Indoor",l:"Indoors"},{v:"Outdoor",l:"Outdoors"},{v:"Both",l:"Indoors and outdoors"}], n.env)
+    + sel("n_transport","Transport", [{v:"Any",l:"Not a deciding factor"},{v:"Fold",l:"Must fold to fit in a car"},{v:"Lift",l:"Must be lifted in unaided"}], n.transport)
+    + sel("n_propel","Who propels the chair", [{v:"Any",l:"Not a wheelchair, or not decided"},{v:"Self",l:"The client propels"},{v:"Attendant",l:"A carer pushes"}], n.propel)
+    + sel("n_wrists","Can take weight through hands and wrists", [{v:"Any",l:"Not a deciding factor"},{v:"Yes",l:"Yes"},{v:"No",l:"No, needs forearm support"}], n.wrists)
+    + sel("n_risk","Pressure injury risk", [{v:"Any",l:"Not a deciding factor"},{v:"Low",l:"Low"},{v:"Moderate",l:"Moderate"},{v:"High",l:"High"}], n.risk)
+    + num("n_budget","Budget ceiling ($)", n.budget, "e.g. 500")
+    + '</div>'
+    + '<div class="btnrow"><button class="btn btn--ghost" id="clearNeed" type="button">Start a new client</button></div>';
+}
+
+/* ---------- match view ---------- */
+function renderMatch(){
+  const n = STATE.need;
+  const results = assess(n);
+  const active = CRITERIA.filter(c=>c.active(n));
+  const full = results.filter(r=>r.fit==="full");
+  const partial = results.filter(r=>r.fit==="partial");
+  const missing = gaps(n, results);
+
+  let summary;
+  if(!active.length){
+    summary = '<div class="caveat">Nothing has been entered yet, so the whole range is listed. Fill in what the client in front of you needs and the list narrows to what actually fits, with the reason shown against each product.</div>';
+  } else if(full.length){
+    summary = '<div class="caveat"><strong>'+full.length+' product'+(full.length===1?"":"s")+' meet'+(full.length===1?"s":"")+' every requirement</strong> out of '+results.length+' in '
+      + (n.cat==="ALL" ? "your four categories" : esc(CATNAME[n.cat])) + '. '
+      + (partial.length ? partial.length+' more come close and are listed with what they fall short on.' : '')
+      + '</div>';
+  } else {
+    summary = '<div class="caveat"><strong>Nothing in the range meets every requirement.</strong> '
+      + (partial.length ? partial.length+' products fall short only on preference, not on suitability. They are listed first.' : 'The products below each fail at least one requirement that affects suitability.')
+      + '</div>';
+  }
+
+  let gapHtml = "";
+  if(missing.length){
+    gapHtml = '<div class="gap"><h3>What the range does not cover for this client</h3>'
+      + '<p>Every product in scope fails on the requirements below. This is a range gap, not a selection problem, and it is worth recording.</p><ul>'
+      + missing.map(m=>'<li><strong>'+esc(m.label)+'</strong>'
+          + (m.nearest ? ' &mdash; closest is '+esc(m.nearest.name)+', '+esc(m.detail) : '')
+          + (m.hard ? '' : ' (preference, not suitability)') + '</li>').join("")
+      + '</ul><p>Tell the client plainly what the range does not do, offer the closest product with its limitation stated, and pass the gap to Category Management with the client requirement written down.</p></div>';
+  }
+
+  const cards = results.map(r=>{
+    const p = r.product, a = av(p.sku);
+    const checks = r.checks.filter(c=>c.r !== "na");
+    const fitLabel = r.fit === "full" ? "Meets every requirement"
+      : r.fit === "partial" ? "Short on "+r.softMiss+" preference"+(r.softMiss===1?"":"s")
+      : "Not suitable: "+r.hardMiss+" requirement"+(r.hardMiss===1?"":"s")+" not met";
+    return '<article class="card" data-fit="'+r.fit+'">'
+      + '<div class="card__top">'
+      +   '<h3 class="card__name">'+esc(p.name)+'<span class="sku">'+esc(p.sku)+' &middot; '+esc(CATNAME[p.cat])+'</span></h3>'
+      +   '<span class="fit fit--'+r.fit+'">'+esc(fitLabel)+'</span>'
+      + '</div>'
+      + '<div class="card__top">'+gbbChip(p.gbb)
+      +   '<span class="chip '+(a.displayed?"chip--ok":"chip--crit")+'"><span class="chip__dot"></span>'+(a.displayed?"On display":"Not on display")+'</span>'
+      +   '<span class="chip '+(a.stock==="In stock"?"chip--ok":a.stock==="Low stock"?"chip--warn":"chip--serious")+'"><span class="chip__dot"></span>'+esc(a.stock)+'</span>'
+      + '</div>'
+      + '<p class="card__why"><b>For:</b> '+esc(p.need)+'. <b>Why this one:</b> '+esc(p.value)+'.</p>'
+      + '<div class="card__specs">'
+      +   '<span><u>Load</u><b>'+p.swl+' kg</b></span>'
+      +   (p.seatW ? '<span><u>Seat</u><b>'+p.seatW+' mm</b></span>' : '')
+      +   '<span><u>Weight</u><b>'+p.weight+' kg</b></span>'
+      +   (p.risk ? '<span><u>Risk level</u><b>'+esc(p.risk)+'</b></span>' : '')
+      +   '<span><u>Folds</u><b>'+(p.folds?"Yes":"No")+'</b></span>'
+      +   '<span><u>Fitted here</u><b>'+a.fitted+'</b></span>'
+      + '</div>'
+      + (checks.length
+          ? '<ul class="card__checks">'+checks.map(c=>'<li data-r="'+c.r+'"><i>'+(c.r==="yes"?"✓":"✕")+'</i><span>'+esc(c.label)+': '+esc(c.detail)+'</span></li>').join("")+'</ul>'
+          : '<p class="card__why"><b>Limitation:</b> '+esc(p.limits)+'</p>')
+      + '<div class="card__foot">'
+      +   '<span class="card__price">'+money(p.price)+'</span>'
+      +   '<label class="pick"><input type="checkbox" data-pick="'+esc(p.sku)+'"'+(STATE.tray.includes(p.sku)?" checked":"")+'> Compare</label>'
+      + '</div></article>';
+  }).join("");
+
+  return '<div class="panel"><div class="panel__head"><h2 class="panel__title">What does the client need</h2></div>'
+    + '<p class="panel__note panel__note--tight">Answer only what you know. Anything left on "not a deciding factor" is ignored, so a half filled form still gives a usable shortlist.</p>'
+    + needsForm() + '</div>'
+    + summary + gapHtml
+    + '<div class="results">'+cards+'</div>';
+}
+
+/* ---------- compare view ---------- */
+function renderCompare(){
+  if(!STATE.tray.length){
+    return '<div class="panel"><p class="empty">Nothing selected yet. Tick <strong>Compare</strong> on two or more products and they will line up side by side here, with the rows that actually differ picked out.</p></div>';
+  }
+  const items = STATE.tray.map(k=>PBYSKU[k]).filter(Boolean);
+  const n = STATE.need;
+  const rows = [
+    { label:"Range position", get:p=>gbbChip(p.gbb), raw:p=>p.gbb },
+    { label:"Price", get:p=>'<span class="best">'+money(p.price)+'</span>', raw:p=>p.price },
+    { label:"Customer or clinical need", get:p=>esc(p.need), raw:p=>p.need },
+    { label:"Main functional difference", get:p=>esc(p.diff), raw:p=>p.diff },
+    { label:"Main customer value", get:p=>esc(p.value), raw:p=>p.value },
+    { label:"Safe working load", get:p=>p.swl+" kg", raw:p=>p.swl },
+    { label:"Seat width", get:p=>p.seatW ? p.seatW+" mm" : "Not applicable", raw:p=>p.seatW },
+    { label:"Product weight", get:p=>p.weight+" kg", raw:p=>p.weight },
+    { label:"Folds for transport", get:p=>p.folds?"Yes":"No", raw:p=>p.folds },
+    { label:"Where it suits", get:p=>esc(p.env), raw:p=>p.env },
+    { label:"Propulsion", get:p=>p.propel==="n/a"?"Not applicable":esc(p.propel), raw:p=>p.propel },
+    { label:"Takes weight through", get:p=>p.support==="n/a"?"Not applicable":esc(p.support), raw:p=>p.support },
+    { label:"Pressure risk rating", get:p=>p.risk?esc(p.risk):"Not a pressure care product", raw:p=>p.risk },
+    { label:"Limitation to state", get:p=>esc(p.limits), raw:p=>p.limits },
+    { label:"On display here", get:p=>av(p.sku).displayed?"Yes":"No", raw:p=>av(p.sku).displayed },
+    { label:"Demonstration ready", get:p=>av(p.sku).demoReady?"Yes":"No", raw:p=>av(p.sku).demoReady },
+    { label:"Stock", get:p=>esc(av(p.sku).stock), raw:p=>av(p.sku).stock },
+    { label:"Fitted here last quarter", get:p=>String(av(p.sku).fitted), raw:p=>av(p.sku).fitted }
+  ];
+  const active = CRITERIA.filter(c=>c.active(n));
+  if(active.length){
+    rows.unshift({ label:"Fit against this client", get:p=>{
+      const r = evaluate(p, n);
+      const cls = r.fit;
+      const txt = r.fit==="full" ? "Meets every requirement" : r.fit==="partial" ? "Short on preference" : r.hardMiss+" requirement"+(r.hardMiss===1?"":"s")+" not met";
+      return '<span class="fit fit--'+cls+'">'+txt+'</span>';
+    }, raw:p=>evaluate(p,n).fit });
+  }
+
+  const body = rows.map(r=>{
+    const vals = items.map(r.raw);
+    const differs = vals.some(v=>String(v) !== String(vals[0])) ? "1" : "0";
+    return '<tr data-diff="'+differs+'"><td>'+esc(r.label)+'</td>'
+      + items.map(p=>'<td>'+r.get(p)+'</td>').join("") + '</tr>';
+  }).join("");
+
+  return '<div class="panel"><div class="panel__head"><h2 class="panel__title">Side by side</h2>'
+    + '<span class="chip">'+items.length+' selected</span></div>'
+    + '<p class="panel__note panel__note--tight">Rows that differ between these products are shaded, so the real choice is visible without reading every line. Limitations are shown, not left out.</p>'
+    + '<div class="tablewrap"><table class="cmp"><thead><tr><th>Attribute</th>'
+    + items.map(p=>'<th>'+esc(p.name)+'<span class="sku">'+esc(p.sku)+'</span></th>').join("")
+    + '</tr></thead><tbody>'+body+'</tbody></table></div></div>';
+}
+
+/* ---------- full range: the Good Better Best matrix ---------- */
+function renderRange(){
+  const cats = STATE.need.cat === "ALL" ? CATEGORIES : CATEGORIES.filter(c=>c.id===STATE.need.cat);
+  return cats.map(c=>{
+    const fams = [...new Set(PRODUCTS.filter(p=>p.cat===c.id).map(p=>p.family))];
+    const body = fams.map(f=>{
+      const cells = GBB.map(g=>{
+        const list = PRODUCTS.filter(p=>p.cat===c.id && p.family===f && p.gbb===g);
+        if(!list.length) return '<td><span style="color:var(--ink-muted)">No product in this position</span></td>';
+        return '<td>'+list.map(p=>{
+          const a = av(p.sku);
+          return '<div style="margin-bottom:9px">'
+            + '<strong>'+esc(p.name)+'</strong> <span class="sku">'+esc(p.sku)+' &middot; '+money(p.price)+'</span>'
+            + '<div style="font-size:12px;color:var(--ink-2);margin-top:3px">'+esc(p.value)+'</div>'
+            + '<div style="margin-top:5px;display:flex;gap:5px;flex-wrap:wrap">'
+            +   '<span class="chip '+(a.displayed?"chip--ok":"chip--crit")+'"><span class="chip__dot"></span>'+(a.displayed?"Displayed":"Not displayed")+'</span>'
+            +   '<label class="pick"><input type="checkbox" data-pick="'+esc(p.sku)+'"'+(STATE.tray.includes(p.sku)?" checked":"")+'> Compare</label>'
+            + '</div></div>';
+        }).join("")+'</td>';
+      }).join("");
+      return '<tr><td><strong>'+esc(f)+'</strong></td>'+cells+'</tr>';
+    }).join("");
+    return '<div class="panel"><div class="panel__head"><h2 class="panel__title">'+esc(c.name)+'</h2></div>'
+      + '<p class="panel__note panel__note--tight">Good, Better and Best sit on genuine differences in customer need, function and value. An empty position is a gap only where a client requirement supports it.</p>'
+      + '<div class="tablewrap"><table class="cmp"><thead><tr><th>Product family</th>'
+      + GBB.map(g=>'<th><span class="swatch" style="background:var('+GBBVAR[g]+');margin-right:6px"></span>'+g+'</th>').join("")
+      + '</tr></thead><tbody>'+body+'</tbody></table></div></div>';
+  }).join("");
+}
+
+/* ---------- in the showroom ---------- */
+function renderShowroom(){
+  const s = SHOWROOMS.find(x=>x.id===STATE.showroom) || SHOWROOMS[0];
+  const req = PRODUCTS.filter(p=>p.req==="Required");
+  const missing = req.filter(p=>!av(p.sku).displayed);
+  const rows = PRODUCTS.map(p=>{
+    const a = av(p.sku);
+    return '<tr><td>'+esc(p.name)+'<span class="sku">'+esc(p.sku)+' &middot; '+esc(CATNAME[p.cat])+'</span></td>'
+      + '<td>'+gbbChip(p.gbb)+'</td>'
+      + '<td><span class="chip '+(a.displayed?"chip--ok":"chip--crit")+'"><span class="chip__dot"></span>'+(a.displayed?"Displayed":"Not displayed")+'</span></td>'
+      + '<td><span class="chip '+(a.demoReady?"chip--ok":"chip--warn")+'"><span class="chip__dot"></span>'+(a.demoReady?"Demo ready":"Not demo ready")+'</span></td>'
+      + '<td><span class="chip '+(a.stock==="In stock"?"chip--ok":a.stock==="Low stock"?"chip--warn":"chip--serious")+'"><span class="chip__dot"></span>'+esc(a.stock)+'</span></td>'
+      + '<td>'+esc(p.req)+'</td>'
+      + '<td class="num">'+a.fitted+'</td></tr>';
+  }).join("");
+
+  return '<div class="panel"><div class="panel__head"><h2 class="panel__title">'+esc(s.name)+' <span style="color:var(--ink-muted);font-weight:400">'+esc(s.profile)+'</span></h2>'
+    + '<span class="chip '+(missing.length?"chip--crit":"chip--ok")+'"><span class="chip__dot"></span>'+missing.length+' required product'+(missing.length===1?"":"s")+' not on display</span></div>'
+    + '<p class="panel__note panel__note--tight">Change the showroom on the client needs tab. A product you cannot show is a product you will not sell, so a required product off display is worth raising.</p>'
+    + (missing.length ? '<div class="gap"><h3>Required but not on display here</h3><ul>'
+        + missing.map(p=>'<li>'+esc(p.name)+' <span class="sku" style="display:inline">'+esc(CATNAME[p.cat])+'</span></li>').join("")
+        + '</ul><p>Raise these with the showroom and Category Management, with the date you checked.</p></div>' : '')
+    + '<div class="tablewrap"><table><thead><tr><th>Product</th><th>Position</th><th>Display</th><th>Demonstration</th>'
+    + '<th>Stock</th><th>Range status</th><th class="num">Fitted last quarter</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+}
+
+/* ---------- catalogue ---------- */
+const CSV_HEADER = "sku,name,category,family,position,price,swl_kg,seat_width_mm,product_weight_kg,folds,environment,propulsion,support,pressure_risk,customer_need,functional_difference,customer_value,limitations,range_status";
+
+function renderData(){
+  const m = STATE.meta;
+  return '<div class="panel"><div class="panel__head"><h2 class="panel__title">Where these specifications come from</h2>'
+    + '<span class="chip '+(m.isSample?"chip--warn":"chip--ok")+'"><span class="chip__dot"></span>'+(m.isSample?"Sample specifications":"Loaded catalogue")+'</span></div>'
+    + '<p class="panel__note panel__note--tight">Safe working load, seat width and pressure care ratings decide whether a product is safe for a client, so the source and the date they were last checked are shown on every screen.</p>'
+    + '<div class="formgrid">'
+    +   '<label class="field"><span class="field__label">Catalogue source</span><input id="mSource" type="text" value="'+esc(m.source)+'" placeholder="The document or system these specifications came from"></label>'
+    +   '<label class="field"><span class="field__label">Last checked</span><input id="mUpdated" type="date" value="'+esc(m.updated)+'"></label>'
+    +   '<label class="field needs__span"><span class="field__label">Note</span><textarea id="mNote" placeholder="Anything a user of this tool needs to know, such as a specification still to be confirmed">'+esc(m.note)+'</textarea></label>'
+    + '</div><div class="btnrow"><button class="btn btn--ghost" id="saveMeta" type="button">Save</button></div></div>'
+
+    + '<div class="panel"><div class="panel__head"><h2 class="panel__title">Load the real catalogue</h2></div>'
+    + '<p class="panel__note panel__note--tight">Paste one row per product using the header below, or choose a CSV file. Loading replaces the sample specifications and removes the sample label. Position must be Good, Better or Best. Pressure risk is Low, Moderate, High or left empty.</p>'
+    + '<div class="formgrid"><label class="field needs__span"><span class="field__label">Header</span>'
+    +   '<textarea readonly style="min-height:52px;font-family:var(--mono);font-size:11px">'+CSV_HEADER+'</textarea></label>'
+    +   '<label class="field needs__span"><span class="field__label">Paste rows</span>'
+    +   '<textarea id="csvIn" placeholder="AID-1234,Seat Walker 4 Wheel Alloy,MA,Seat Walkers,Best,479,135,460,7.1,yes,Both,n/a,Hands,,Active user outdoors,Alloy frame,Can be lifted into a car unaided,Higher price than steel,Required"></textarea></label></div>'
+    + '<p class="hint" id="csvHint"></p>'
+    + '<div class="btnrow"><input type="file" id="csvFile" accept=".csv,text/csv" style="flex:0 0 auto">'
+    +   '<button class="btn" id="importCsv" type="button">Load catalogue</button>'
+    +   '<button class="btn btn--danger" id="resetSample" type="button">Restore sample specifications</button></div></div>'
+
+    + '<div class="panel"><div class="panel__head"><h2 class="panel__title">Export what is on screen</h2></div>'
+    + '<p class="panel__note panel__note--tight">This page keeps the client requirement and your comparison in this browser only. It does not reach another person or another device, so copy anything you need to keep.</p>'
+    + '<div class="formgrid"><label class="field needs__span">'
+    +   '<textarea id="exportBox" readonly style="min-height:120px;font-family:var(--mono);font-size:11px"></textarea></label></div>'
+    + '<div class="btnrow"><button class="btn btn--ghost" id="buildExport" type="button">Build export</button></div></div>';
+}
+
+function parseCatalogue(text){
+  const lines = text.trim().split(/\r?\n/).filter(l=>l.trim());
+  if(!lines.length) return { error:"Nothing to load." };
+  let start = lines[0].toLowerCase().replace(/\s/g,"") === CSV_HEADER ? 1 : 0;
+  const out = [], bad = [];
+  for(let i=start;i<lines.length;i++){
+    const c = lines[i].split(",").map(x=>x.trim());
+    if(c.length < 19){ bad.push(i+1); continue; }
+    if(!GBB.includes(c[4])){ bad.push(i+1); continue; }
+    if(!CATNAME[c[2]]){ bad.push(i+1); continue; }
+    const n = v => { const x = parseFloat(v); return isNaN(x) ? 0 : x; };
+    const risk = ["Low","Moderate","High"].includes(c[13]) ? c[13] : null;
+    out.push({
+      sku:c[0], name:c[1], cat:c[2], family:c[3], gbb:c[4], price:n(c[5]),
+      swl:n(c[6]), seatW:n(c[7]) || null, weight:n(c[8]),
+      folds:/^(y|yes|true|1)$/i.test(c[9]),
+      env:["Indoor","Outdoor","Both"].includes(c[10]) ? c[10] : "Both",
+      propel:["Self","Attendant"].includes(c[11]) ? c[11] : "n/a",
+      support:["Hands","Forearms","Seated"].includes(c[12]) ? c[12] : "n/a",
+      risk, need:c[14], diff:c[15], value:c[16], limits:c[17],
+      req:["Required","Optional","Local"].includes(c[18]) ? c[18] : "Optional"
+    });
+  }
+  if(!out.length) return { error:"No usable rows. Check the column order, the category code and the Good, Better or Best position." };
+  return { products:out, bad };
+}
+
+function setProducts(list){
+  PRODUCTS.length = 0;
+  list.forEach(p=>PRODUCTS.push(p));
+  Object.keys(PBYSKU).forEach(k=>delete PBYSKU[k]);
+  PRODUCTS.forEach(p=>{ PBYSKU[p.sku] = p; });
+  STATE.avail = buildAvailability();
+  STATE.tray = STATE.tray.filter(k=>PBYSKU[k]);
+}
+
+/* ---------- render ---------- */
+function renderTray(){
+  const tray = document.getElementById("tray");
+  tray.hidden = STATE.tray.length === 0;
+  document.getElementById("trayItems").innerHTML = STATE.tray.map(k=>{
+    const p = PBYSKU[k];
+    return '<span class="tray__chip">'+esc(p ? p.name : k)+'<button type="button" data-drop="'+esc(k)+'" aria-label="Remove">&times;</button></span>';
+  }).join("");
+  document.getElementById("cntCmp").textContent = STATE.tray.length;
+}
+
+/* Picking a product must not rebuild the list under the user's cursor,
+   so only the tray, the tick boxes and the comparison are refreshed. */
+function syncPicks(){
+  document.querySelectorAll("input[data-pick]").forEach(el=>{
+    el.checked = STATE.tray.includes(el.dataset.pick);
+  });
+  document.getElementById("view-compare").innerHTML = renderCompare();
+  renderTray();
+  saveState();
+}
+
+function render(){
+  document.getElementById("view-match").innerHTML = renderMatch();
+  document.getElementById("view-compare").innerHTML = renderCompare();
+  document.getElementById("view-range").innerHTML = renderRange();
+  document.getElementById("view-showroom").innerHTML = renderShowroom();
+  document.getElementById("view-data").innerHTML = renderData();
+  renderTray();
+
+  const banner = document.getElementById("dataBanner");
+  if(STATE.meta.isSample){
+    banner.dataset.kind = "sample";
+    document.getElementById("bannerTag").textContent = "Sample specifications";
+    document.getElementById("bannerText").innerHTML = '<strong>The specifications and stock figures here are sample values, not the Aidacare catalogue.</strong> '
+      + 'They are in place so the matching, the comparison and the gap rules can be checked. '
+      + 'Load the real catalogue on the <button class="linklike" data-goto="data" type="button">Catalogue</button> tab before quoting anything to a customer.';
+  } else {
+    banner.dataset.kind = "real";
+    document.getElementById("bannerTag").textContent = "Loaded catalogue";
+    document.getElementById("bannerText").innerHTML = '<strong>Source: '+esc(STATE.meta.source)+'.</strong> '
+      + 'Last checked ' + esc(STATE.meta.updated || "date not recorded") + '. '
+      + (STATE.meta.note ? esc(STATE.meta.note) + ' ' : '')
+      + 'Confirm safe working load and seat width against the current product documentation before an order is placed.';
+  }
+  saveState();
+}
+
+function setView(v){
+  STATE.view = v;
+  document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected", String(t.dataset.view === v)));
+  ["match","compare","range","showroom","data"].forEach(k=>{
+    document.getElementById("view-"+k).hidden = (k !== v);
+  });
+  saveState();
+}
+
+/* ---------- events ---------- */
+function readNeed(){
+  const g = id => { const el = document.getElementById(id); return el ? el.value : null; };
+  const n = STATE.need;
+  const map = { n_cat:"cat", n_weight:"userWeight", n_seatWidth:"seatWidth", n_env:"env",
+                n_transport:"transport", n_propel:"propel", n_wrists:"wrists", n_risk:"risk", n_budget:"budget" };
+  Object.keys(map).forEach(id=>{ const v = g(id); if(v !== null) n[map[id]] = v; });
+  const sr = g("n_showroom"); if(sr) STATE.showroom = sr;
+}
+
+document.addEventListener("change", ev=>{
+  const t = ev.target;
+  if(t.id && t.id.indexOf("n_") === 0){ readNeed(); render(); return; }
+  if(t.dataset.pick){
+    const sku = t.dataset.pick;
+    if(t.checked){ if(!STATE.tray.includes(sku)) STATE.tray.push(sku); }
+    else STATE.tray = STATE.tray.filter(k=>k!==sku);
+    syncPicks();
+    return;
+  }
+  if(t.id === "csvFile" && t.files && t.files[0]){
+    const fr = new FileReader();
+    fr.onload = ()=>{ const box = document.getElementById("csvIn"); if(box) box.value = fr.result; };
+    fr.readAsText(t.files[0]);
+    return;
+  }
+});
+
+document.addEventListener("click", ev=>{
+  const t = ev.target.closest("button");
+  if(!t) return;
+
+  if(t.classList.contains("tab")){ setView(t.dataset.view); return; }
+  if(t.dataset.goto){ setView(t.dataset.goto); window.scrollTo({top:0,behavior:"smooth"}); return; }
+  if(t.dataset.drop){ STATE.tray = STATE.tray.filter(k=>k!==t.dataset.drop); syncPicks(); return; }
+  if(t.id === "clearTray"){ STATE.tray = []; syncPicks(); return; }
+  if(t.id === "goCompare"){ setView("compare"); window.scrollTo({top:0,behavior:"smooth"}); return; }
+
+  if(t.id === "clearNeed"){
+    STATE.need = Object.assign({}, BLANK_NEED);
+    STATE.tray = [];
+    render(); setView("match");
+    return;
+  }
+  if(t.id === "saveMeta"){
+    const g = id => (document.getElementById(id)||{}).value || "";
+    STATE.meta.source = g("mSource"); STATE.meta.updated = g("mUpdated"); STATE.meta.note = g("mNote");
+    render(); setView("data"); return;
+  }
+  if(t.id === "importCsv"){
+    const hint = document.getElementById("csvHint");
+    const src = (document.getElementById("mSource")||{}).value || "";
+    const upd = (document.getElementById("mUpdated")||{}).value || "";
+    if(!src || src === "Generated sample specifications" || !upd){
+      hint.textContent = "Record the catalogue source and the date it was last checked above before loading. A specification without a source cannot be quoted to a customer.";
+      hint.style.color = "var(--crit)"; return;
+    }
+    const res = parseCatalogue((document.getElementById("csvIn")||{}).value || "");
+    if(res.error){ hint.textContent = res.error; hint.style.color = "var(--crit)"; return; }
+    setProducts(res.products);
+    STATE.meta.isSample = false; STATE.meta.source = src; STATE.meta.updated = upd;
+    STATE.meta.note = (document.getElementById("mNote")||{}).value || "";
+    render(); setView("data");
+    const h = document.getElementById("csvHint");
+    if(h){
+      h.textContent = res.products.length + " products loaded." + (res.bad.length ? " " + res.bad.length + " lines were skipped: " + res.bad.slice(0,12).join(", ") + "." : "");
+      h.style.color = res.bad.length ? "var(--serious)" : "var(--delta-up)";
+    }
+    return;
+  }
+  if(t.id === "resetSample"){
+    if(!confirm("Restore the sample specifications and discard the loaded catalogue?")) return;
+    location.reload();
+    return;
+  }
+  if(t.id === "buildExport"){
+    const box = document.getElementById("exportBox");
+    if(box){
+      const n = STATE.need;
+      const active = CRITERIA.filter(c=>c.active(n));
+      const lines = ["Client requirement", "Recorded " + new Date().toISOString().slice(0,10),
+        "Showroom: " + ((SHOWROOMS.find(s=>s.id===STATE.showroom)||{}).name || STATE.showroom), ""];
+      if(!active.length) lines.push("Nothing recorded.");
+      active.forEach(c=>{
+        const v = { weight:n.userWeight+" kg", seat:n.seatWidth+" mm", risk:n.risk, propel:n.propel,
+                    wrists:"Cannot take weight through hands or wrists", env:n.env, fold:n.transport,
+                    lift:"Must be lifted into a car unaided", budget:money(+n.budget) }[c.id];
+        lines.push("- " + c.label + ": " + v);
+      });
+      lines.push("", "Shortlisted");
+      (STATE.tray.length ? STATE.tray : assess(n).filter(r=>r.fit==="full").slice(0,3).map(r=>r.product.sku))
+        .forEach(k=>{
+          const p = PBYSKU[k]; if(!p) return;
+          const r = evaluate(p, n);
+          lines.push("- " + p.name + " (" + p.sku + ", " + p.gbb + ", " + money(p.price) + ") "
+            + (r.fit==="full" ? "meets every requirement" : r.fit==="partial" ? "short on preference only" : r.hardMiss+" requirement(s) not met"));
+          lines.push("  Limitation: " + p.limits);
+        });
+      const g = gaps(n, assess(n));
+      if(g.length){
+        lines.push("", "Range gaps to pass to Category Management");
+        g.forEach(x=>lines.push("- " + x.label + (x.nearest ? " (closest: " + x.nearest.name + ", " + x.detail + ")" : "")));
+      }
+      lines.push("", "Source: " + STATE.meta.source + (STATE.meta.isSample ? " - SAMPLE VALUES, NOT THE AIDACARE CATALOGUE" : ", last checked " + (STATE.meta.updated || "not recorded")));
+      box.value = lines.join("\n");
+      box.select();
+    }
+    return;
+  }
+  if(t.id === "printBtn"){ window.print(); return; }
+  if(t.id === "themeBtn"){
+    const cur = document.documentElement.getAttribute("data-theme");
+    const next = cur === "dark" ? "light" : cur === "light" ? "dark" : (matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "dark");
+    document.documentElement.setAttribute("data-theme", next);
+    try{ localStorage.setItem(LSKEY+".theme", next); }catch(e){}
+    return;
+  }
+});
+
+/* ---------- start ---------- */
+(function init(){
+  try{ const th = localStorage.getItem(LSKEY+".theme"); if(th) document.documentElement.setAttribute("data-theme", th); }catch(e){}
+  loadState();
+  render();
+  setView(STATE.view || "match");
+})();
+</script>
+</body>
+</html>
