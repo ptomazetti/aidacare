@@ -519,6 +519,18 @@ table.mx{table-layout:fixed}
 .mx__sku{font-family:var(--mono);font-size:10.5px;color:var(--ink-muted);margin-bottom:4px}
 .mx__reasons{margin:0 0 5px;padding-left:15px;font-size:11.5px;line-height:1.45}
 .mx__reasons li{margin-bottom:2px}
+.findbar{
+  display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;
+  padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);
+}
+.findbar input[type="search"]{
+  flex:1 1 230px;min-width:0;padding:8px 10px;border:1px solid var(--rule);
+  border-radius:6px;background:var(--surface-2);font-size:13px;
+}
+.findbar select{padding:7px 9px;border:1px solid var(--rule);border-radius:6px;background:var(--surface-2);font-size:12.5px}
+.findbar__count{font-size:12px;color:var(--ink-muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.findbar__clear{flex:0 0 auto}
+.showmore{margin-top:12px;width:100%}
 .photoup{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;margin-top:6px}
 </style>
 </head>
@@ -872,6 +884,32 @@ function evaluate(p, need){
   return { product:p, checks, fit, hardMiss, softMiss, met };
 }
 
+/* Find a product by name, code, family or category. Filtering to a client
+   narrows the list; searching finds one you already know the name of. */
+function searchMatch(p, q){
+  if(!q) return true;
+  const hay = (p.name + " " + p.sku + " " + p.family + " " + (CATNAME[p.cat]||"") + " " + p.gbb).toLowerCase();
+  return q.toLowerCase().split(/\s+/).filter(Boolean).every(term => hay.indexOf(term) !== -1);
+}
+
+const SORTS = [
+  { v:"fit",       l:"Best fit first" },
+  { v:"priceAsc",  l:"Price, lowest first" },
+  { v:"priceDesc", l:"Price, highest first" },
+  { v:"name",      l:"Name, A to Z" },
+  { v:"gbb",       l:"Good, Better, Best" }
+];
+function sortResults(list, how){
+  const rank = { full:0, partial:1, none:2 };
+  const byFit = (a,b)=> rank[a.fit] - rank[b.fit] || a.hardMiss - b.hardMiss || a.softMiss - b.softMiss;
+  const out = list.slice();
+  if(how === "priceAsc")  out.sort((a,b)=> byFit(a,b) || a.product.price - b.product.price);
+  else if(how === "priceDesc") out.sort((a,b)=> byFit(a,b) || b.product.price - a.product.price);
+  else if(how === "name") out.sort((a,b)=> a.product.name.localeCompare(b.product.name));
+  else if(how === "gbb")  out.sort((a,b)=> byFit(a,b) || GBBORDER[a.product.gbb] - GBBORDER[b.product.gbb] || a.product.price - b.product.price);
+  return out;
+}
+
 function scope(need){
   return PRODUCTS.filter(p => need.cat === "ALL" || p.cat === need.cat);
 }
@@ -939,6 +977,7 @@ function gaps(need, results){
 const LSKEY = "aidacare.rangematch.v1";
 const STATE = {
   need: Object.assign({}, BLANK_NEED),
+  search:"", sort:"fit", limit:24,
   showroom:"S01",
   tray:[],
   view:"match",
@@ -946,7 +985,8 @@ const STATE = {
   meta:{ isSample:true, source:"Generated sample specifications", updated:"", note:"" }
 };
 function saveState(){
-  try{ localStorage.setItem(LSKEY, JSON.stringify({ need:STATE.need, showroom:STATE.showroom, tray:STATE.tray, meta:STATE.meta })); }catch(e){}
+  try{ localStorage.setItem(LSKEY, JSON.stringify({ need:STATE.need, showroom:STATE.showroom, tray:STATE.tray,
+    meta:STATE.meta, search:STATE.search, sort:STATE.sort })); }catch(e){}
 }
 function loadState(){
   try{
@@ -956,6 +996,8 @@ function loadState(){
     if(s.showroom) STATE.showroom = s.showroom;
     if(Array.isArray(s.tray)) STATE.tray = s.tray.filter(k => PBYSKU[k]);
     if(s.meta) Object.assign(STATE.meta, s.meta);
+    if(typeof s.search === "string") STATE.search = s.search;
+    if(s.sort && SORTS.some(o=>o.v === s.sort)) STATE.sort = s.sort;
   }catch(e){}
 }
 
@@ -1002,53 +1044,8 @@ function needsForm(){
 }
 
 /* ---------- match view ---------- */
-function renderMatch(){
-  const n = STATE.need;
-  const results = assess(n);
-  const active = CRITERIA.filter(c=>c.active(n));
-  const full = results.filter(r=>r.fit==="full");
-  const partial = results.filter(r=>r.fit==="partial");
-  const report = gapReport(n, results);
-  const missing = report.impossible;
+function resultCard(r){
 
-  let summary;
-  if(!active.length){
-    summary = '<div class="caveat">Nothing has been entered yet, so the whole range is listed. Fill in what the client in front of you needs and the list narrows to what actually fits, with the reason shown against each product.</div>';
-  } else if(full.length){
-    summary = '<div class="caveat"><strong>'+full.length+' product'+(full.length===1?"":"s")+' meet'+(full.length===1?"s":"")+' every requirement</strong> out of '+results.length+' in '
-      + (n.cat==="ALL" ? "your four categories" : esc(CATNAME[n.cat])) + '. '
-      + (partial.length ? partial.length+' more come close and are listed with what they fall short on.' : '')
-      + '</div>';
-  } else {
-    summary = '<div class="caveat"><strong>Nothing in the range meets every requirement.</strong> '
-      + (partial.length ? partial.length+' products fall short only on preference, not on suitability. They are listed first.' : 'The products below each fail at least one requirement that affects suitability.')
-      + '</div>';
-  }
-
-  let gapHtml = "";
-  if(report.any){
-    const lead = missing.length
-      ? '<p>Every product in scope fails on the requirements below. This is a range gap, not a selection problem.</p><ul>'
-        + missing.map(m=>'<li><strong>'+esc(m.label)+'</strong>'
-            + (m.nearest ? ', closest is '+esc(m.nearest.name)+', '+esc(m.detail) : '')
-            + (m.hard ? '' : ' (preference, not suitability)') + '</li>').join("")
-        + '</ul>'
-      : '<p>Each requirement on its own has a product that meets it, but <strong>no single product meets all '
-        + report.activeCount + ' together</strong>. That combination is the gap.</p>';
-    const near = report.nearest.length
-      ? '<p style="margin-top:4px"><strong>Closest in the range</strong></p><ul>'
-        + report.nearest.map(x=>'<li>'+esc(x.product.name)+' ('+money(x.product.price)+')'
-            + (x.missed.length ? ', falls short on '+esc(x.missed.join("; ")) : '') + '</li>').join("")
-        + '</ul>'
-      : '';
-    gapHtml = '<div class="gap"><h3>What the range does not cover for this client</h3>'
-      + lead + near
-      + '<p>Tell the client plainly what the range does not do, offer the closest product with its limitation stated, and log the gap so it counts towards a range decision.</p>'
-      + '<div class="btnrow"><button class="btn" id="logGapBtn" type="button">Log this gap</button></div>'
-      + '<p class="hint" id="gapSaveNote">' + esc(sharedWhere()) + '</p></div>';
-  }
-
-  const cards = results.map(r=>{
     const p = r.product, a = av(p.sku), acc = accessoriesFor(p);
     const checks = r.checks.filter(c=>c.r !== "na");
     const fitLabel = r.fit === "full" ? "Meets every requirement"
@@ -1101,13 +1098,101 @@ function renderMatch(){
       +   '<span class="card__price">'+money(p.price)+'</span>'
       +   '<label class="pick"><input type="checkbox" data-pick="'+esc(p.sku)+'"'+(STATE.tray.includes(p.sku)?" checked":"")+'> Compare</label>'
       + '</div></article>';
-  }).join("");
+}
+
+/* The grid is rebuilt on its own when the search or the sort changes, so
+   the search box keeps focus and the page does not jump. */
+function visibleResults(){
+  const all = assess(STATE.need);
+  const found = all.filter(r=>searchMatch(r.product, STATE.search));
+  return { all, found, shown: sortResults(found, STATE.sort).slice(0, STATE.limit) };
+}
+function renderResults(){
+  const v = visibleResults();
+  if(!v.found.length){
+    return '<div class="panel"><p class="empty">Nothing matches <strong>' + esc(STATE.search)
+      + '</strong> in this selection. Clear the search, or widen the category.</p></div>';
+  }
+  const more = v.found.length - v.shown.length;
+  return '<div class="results">' + v.shown.map(resultCard).join("") + '</div>'
+    + (more > 0
+        ? '<button class="btn btn--ghost showmore" id="showMore" type="button">Show ' + Math.min(more, 24)
+          + ' more of ' + more + ' remaining</button>'
+        : '');
+}
+function countText(){
+  const v = visibleResults();
+  return STATE.search
+    ? v.found.length + " of " + v.all.length + " match this search"
+    : v.all.length + " product" + (v.all.length === 1 ? "" : "s") + " in scope";
+}
+function refreshResults(){
+  const area = document.getElementById("resultsArea");
+  if(area) area.innerHTML = renderResults();
+  const c = document.getElementById("findCount");
+  if(c) c.textContent = countText();
+}
+
+function renderMatch(){
+  const n = STATE.need;
+  const results = assess(n);
+  const active = CRITERIA.filter(c=>c.active(n));
+  const full = results.filter(r=>r.fit==="full");
+  const partial = results.filter(r=>r.fit==="partial");
+  const report = gapReport(n, results);
+  const missing = report.impossible;
+
+  let summary;
+  if(!active.length){
+    summary = '<div class="caveat">Nothing has been entered yet, so the whole range is listed. Fill in what the client in front of you needs and the list narrows to what actually fits, with the reason shown against each product.</div>';
+  } else if(full.length){
+    summary = '<div class="caveat"><strong>'+full.length+' product'+(full.length===1?"":"s")+' meet'+(full.length===1?"s":"")+' every requirement</strong> out of '+results.length+' in '
+      + (n.cat==="ALL" ? "your four categories" : esc(CATNAME[n.cat])) + '. '
+      + (partial.length ? partial.length+' more come close and are listed with what they fall short on.' : '')
+      + '</div>';
+  } else {
+    summary = '<div class="caveat"><strong>Nothing in the range meets every requirement.</strong> '
+      + (partial.length ? partial.length+' products fall short only on preference, not on suitability. They are listed first.' : 'The products below each fail at least one requirement that affects suitability.')
+      + '</div>';
+  }
+
+  let gapHtml = "";
+  if(report.any){
+    const lead = missing.length
+      ? '<p>Every product in scope fails on the requirements below. This is a range gap, not a selection problem.</p><ul>'
+        + missing.map(m=>'<li><strong>'+esc(m.label)+'</strong>'
+            + (m.nearest ? ', closest is '+esc(m.nearest.name)+', '+esc(m.detail) : '')
+            + (m.hard ? '' : ' (preference, not suitability)') + '</li>').join("")
+        + '</ul>'
+      : '<p>Each requirement on its own has a product that meets it, but <strong>no single product meets all '
+        + report.activeCount + ' together</strong>. That combination is the gap.</p>';
+    const near = report.nearest.length
+      ? '<p style="margin-top:4px"><strong>Closest in the range</strong></p><ul>'
+        + report.nearest.map(x=>'<li>'+esc(x.product.name)+' ('+money(x.product.price)+')'
+            + (x.missed.length ? ', falls short on '+esc(x.missed.join("; ")) : '') + '</li>').join("")
+        + '</ul>'
+      : '';
+    gapHtml = '<div class="gap"><h3>What the range does not cover for this client</h3>'
+      + lead + near
+      + '<p>Tell the client plainly what the range does not do, offer the closest product with its limitation stated, and log the gap so it counts towards a range decision.</p>'
+      + '<div class="btnrow"><button class="btn" id="logGapBtn" type="button">Log this gap</button></div>'
+      + '<p class="hint" id="gapSaveNote">' + esc(sharedWhere()) + '</p></div>';
+  }
+
 
   return '<div class="panel"><div class="panel__head"><h2 class="panel__title">What does the client need</h2></div>'
     + '<p class="panel__note panel__note--tight">Answer only what you know. Anything left on "not a deciding factor" is ignored, so a half filled form still gives a usable shortlist.</p>'
     + needsForm() + '</div>'
     + summary + gapHtml
-    + '<div class="results">'+cards+'</div>';
+    + '<div class="findbar">'
+    +   '<input id="q" type="search" value="'+esc(STATE.search)+'" placeholder="Find a product by name, code or family" aria-label="Find a product">'
+    +   '<select id="sortBy" aria-label="Sort results">'
+    +     SORTS.map(o=>'<option value="'+o.v+'"'+(o.v===STATE.sort?" selected":"")+'>'+esc(o.l)+'</option>').join("")
+    +   '</select>'
+    +   '<span class="findbar__count" id="findCount">'+esc(countText())+'</span>'
+    +   (STATE.search ? '<button class="btn btn--ghost findbar__clear" id="clearSearch" type="button">Clear</button>' : '')
+    + '</div>'
+    + '<div id="resultsArea">' + renderResults() + '</div>';
 }
 
 /* ---------- compare view ---------- */
@@ -1223,7 +1308,8 @@ function renderShowroom(){
   const s = SHOWROOMS.find(x=>x.id===STATE.showroom) || SHOWROOMS[0];
   const req = PRODUCTS.filter(p=>p.req==="Required");
   const missing = req.filter(p=>!av(p.sku).displayed);
-  const rows = PRODUCTS.map(p=>{
+  const listed = PRODUCTS.filter(p=>searchMatch(p, STATE.search));
+  const rows = listed.map(p=>{
     const a = av(p.sku);
     return '<tr><td>'+esc(p.name)+'<span class="sku">'+esc(p.sku)+' &middot; '+esc(CATNAME[p.cat])+'</span></td>'
       + '<td>'+gbbChip(p.gbb)+'</td>'
@@ -1240,8 +1326,15 @@ function renderShowroom(){
     + (missing.length ? '<div class="gap"><h3>Required but not on display here</h3><ul>'
         + missing.map(p=>'<li>'+esc(p.name)+' <span class="sku" style="display:inline">'+esc(CATNAME[p.cat])+'</span></li>').join("")
         + '</ul><p>Raise these with the showroom and Category Management, with the date you checked.</p></div>' : '')
+    + '<div class="findbar">'
+    +   '<input id="qShowroom" type="search" value="'+esc(STATE.search)+'" placeholder="Find a product by name, code or family" aria-label="Find a product">'
+    +   '<span class="findbar__count">'+listed.length+' of '+PRODUCTS.length+'</span>'
+    +   (STATE.search ? '<button class="btn btn--ghost findbar__clear" id="clearSearch2" type="button">Clear</button>' : '')
+    + '</div>'
     + '<div class="tablewrap"><table><thead><tr><th>Product</th><th>Position</th><th>Display</th><th>Demonstration</th>'
-    + '<th>Stock</th><th>Range status</th><th class="num">Fitted last quarter</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+    + '<th>Stock</th><th>Range status</th><th class="num">Fitted last quarter</th></tr></thead><tbody>'
+    + (rows || '<tr><td colspan="7" class="empty">Nothing matches this search.</td></tr>')
+    + '</tbody></table></div></div>';
 }
 
 /* ---------- catalogue ---------- */
@@ -1451,9 +1544,31 @@ function readNeed(){
   const sr = g("n_showroom"); if(sr) STATE.showroom = sr;
 }
 
+let searchTimer = null;
+document.addEventListener("input", ev=>{
+  const t = ev.target;
+  if(t.id !== "q" && t.id !== "qShowroom") return;
+  STATE.search = t.value;
+  STATE.limit = 24;
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(()=>{
+    if(t.id === "q") refreshResults();
+    else {
+      const box = document.getElementById("view-showroom");
+      if(box){
+        box.innerHTML = renderShowroom();
+        const again = document.getElementById("qShowroom");
+        if(again){ again.focus(); again.setSelectionRange(again.value.length, again.value.length); }
+      }
+    }
+    saveState();
+  }, 130);
+});
+
 document.addEventListener("change", ev=>{
   const t = ev.target;
-  if(t.id && t.id.indexOf("n_") === 0){ readNeed(); render(); return; }
+  if(t.id === "sortBy"){ STATE.sort = t.value; STATE.limit = 24; refreshResults(); saveState(); return; }
+  if(t.id && t.id.indexOf("n_") === 0){ readNeed(); STATE.limit = 24; render(); return; }
   if(t.dataset.pick){
     const sku = t.dataset.pick;
     if(t.checked){ if(!STATE.tray.includes(sku)) STATE.tray.push(sku); }
@@ -1493,6 +1608,9 @@ document.addEventListener("click", ev=>{
   if(t.id === "clearTray"){ STATE.tray = []; syncPicks(); return; }
   if(t.id === "goCompare"){ setView("compare"); window.scrollTo({top:0,behavior:"smooth"}); return; }
 
+  if(t.id === "showMore"){ STATE.limit += 24; refreshResults(); return; }
+  if(t.id === "clearSearch"){ STATE.search = ""; STATE.limit = 24; render(); setView("match"); return; }
+  if(t.id === "clearSearch2"){ STATE.search = ""; render(); setView("showroom"); return; }
   if(t.id === "logGapBtn"){ logGap(); return; }
   if(t.dataset.addacc){
     const sku = t.dataset.addacc;
@@ -1531,6 +1649,8 @@ document.addEventListener("click", ev=>{
   if(t.id === "clearNeed"){
     STATE.need = Object.assign({}, BLANK_NEED);
     STATE.tray = [];
+    STATE.search = "";
+    STATE.limit = 24;
     render(); setView("match");
     return;
   }

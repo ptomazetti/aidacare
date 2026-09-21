@@ -28,6 +28,8 @@ Where the page is served with a shared database, gaps and reports from every sho
 
 **Photos.** One photo per product, shown in the results, the comparison and the Good Better Best matrix. On the published page an editor uploads them on the Catalogue tab and every viewer sees them.
 
+**Finding a product.** A search box above the results matches on name, code, product family, category and range position, all terms must match, and it works alongside the client filter rather than replacing it. Results sort by best fit, price up or down, name, or Good Better Best order. The grid renders 24 at a time with a show more control, so a full catalogue does not arrive as a wall of cards. The showroom list has the same search.
+
 **Compare.** Any number of products can be ticked and lined up side by side. Rows that differ are shaded, so the real choice is visible without reading every line. Stated limitations are shown, not left out.
 
 **Full range.** The Good Better Best matrix in the agreed format: exactly three columns, rows are the customer need segments that genuinely separate a decision in that range, and each cell holds at most two models with a photo and up to three reason phrases written as `label - supporting number`. A model appears in more than one cell where it honestly serves more than one need. An empty position is left empty rather than filled to tidy the grid, and the count of empty positions is shown as a prompt, not a verdict. Header colours follow the Aidacare matrix standard.
