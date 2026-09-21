@@ -26,7 +26,9 @@ Where the page is served with a shared database, gaps and reports from every sho
 
 **What to say.** Every product carries an answer to "why does this one cost more", where it sits against the competition, and the limitation to state out loud. It is a selling tool as well as a selection tool.
 
-**Photos.** One photo per product, shown in the results, the comparison and the Good Better Best matrix. On the published page an editor uploads them on the Catalogue tab and every viewer sees them.
+**Pictures.** Every product carries a picture in the results, the comparison, the matrix and the printed reports. Until real photography is loaded that is a generic line illustration of the product type, drawn per product family. It is never presented as a photo of a specific model. An uploaded photo replaces it everywhere: on the published page an editor uploads on the Catalogue tab and every viewer sees it.
+
+**Choosing a range.** A category and range selector sits under the menu on every tab, so you can change range without going back to the client form. It narrows the results, the matrix, the showroom list and the search together. The menu itself wraps rather than scrolling, so no item is ever hidden off the edge.
 
 **Finding a product.** A search box above the results matches on name, code, product family, category and range position, all terms must match, and it works alongside the client filter rather than replacing it. Results sort by best fit, price up or down, name, or Good Better Best order. The grid renders 24 at a time with a show more control, so a full catalogue does not arrive as a wall of cards. The showroom list has the same search.
 
