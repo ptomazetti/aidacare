@@ -16,7 +16,7 @@
   --surface-2:#f7f9fa;
   --ink:#0e1418;
   --ink-2:#4a565e;
-  --ink-muted:#78858d;
+  --ink-muted:#646f77;
   --line:#dfe4e8;
   --rule:#c6ced4;
   --accent:#1c5cab;
@@ -137,8 +137,10 @@ button,select,input,textarea{font:inherit;color:inherit}
   border:1px solid currentColor;flex:none;margin-top:1px;
 }
 .databanner[data-kind="sample"] .databanner__tag{color:#8a5b00}
-:root[data-theme="dark"] .databanner[data-kind="sample"] .databanner__tag,
-:root:not([data-theme="light"]) .databanner[data-kind="sample"] .databanner__tag{color:var(--warn)}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .databanner[data-kind="sample"] .databanner__tag{color:var(--warn)}
+}
+:root[data-theme="dark"] .databanner[data-kind="sample"] .databanner__tag{color:var(--warn)}
 .databanner strong{color:var(--ink)}
 
 /* ---------- filters ---------- */
@@ -159,7 +161,13 @@ button,select,input,textarea{font:inherit;color:inherit}
 .filters__reset{flex:0 0 auto}
 
 /* ---------- tabs ---------- */
-.tabs{display:flex;gap:2px;margin-block:14px 0;overflow-x:auto;scrollbar-width:thin;border-bottom:1px solid var(--line)}
+.tabs{
+  display:flex;gap:2px;margin-block:14px 0;overflow-x:auto;scrollbar-width:thin;
+  border-bottom:1px solid var(--line);
+  -webkit-overflow-scrolling:touch;
+  mask-image:linear-gradient(to right,#000 calc(100% - 26px),transparent 100%);
+}
+@media (min-width:900px){.tabs{mask-image:none}}
 .tab{
   border:0;background:none;padding:9px 13px;cursor:pointer;white-space:nowrap;
   font-size:13px;font-weight:500;color:var(--ink-muted);
@@ -210,7 +218,7 @@ thead th{
 tbody tr:last-child td{border-bottom:0}
 tbody tr:hover{background:var(--surface-2)}
 td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.sku{font-family:var(--mono);font-size:11px;color:var(--ink-muted);display:block}
+.sku{font-family:var(--mono);font-size:11px;color:#5a656b;display:block}
 .empty{padding:22px 14px;text-align:center;color:var(--ink-muted);font-size:13px}
 
 /* ---------- chips ---------- */
@@ -224,10 +232,18 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
 .chip--warn{color:#7a5400;border-color:color-mix(in srgb,var(--warn) 55%,var(--line))}
 .chip--serious{color:#9c4416;border-color:color-mix(in srgb,var(--serious) 55%,var(--line))}
 .chip--crit{color:#9d2020;border-color:color-mix(in srgb,var(--crit) 45%,var(--line))}
-:root[data-theme="dark"] .chip--ok,:root:not([data-theme="light"]) .chip--ok{color:var(--ok)}
-:root[data-theme="dark"] .chip--warn,:root:not([data-theme="light"]) .chip--warn{color:var(--warn)}
-:root[data-theme="dark"] .chip--serious,:root:not([data-theme="light"]) .chip--serious{color:var(--serious)}
-:root[data-theme="dark"] .chip--crit,:root:not([data-theme="light"]) .chip--crit{color:var(--crit)}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .chip--ok{color:var(--ok)}
+  :root:not([data-theme="light"]) .chip--warn{color:var(--warn)}
+  :root:not([data-theme="light"]) .chip--serious{color:var(--serious)}
+  :root:not([data-theme="light"]) .chip--crit{color:#e8807f}
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .sku,:root:not([data-theme="light"]) .mx__sku{color:var(--ink-muted)}}
+:root[data-theme="dark"] .sku,:root[data-theme="dark"] .mx__sku{color:var(--ink-muted)}
+:root[data-theme="dark"] .chip--ok{color:var(--ok)}
+:root[data-theme="dark"] .chip--warn{color:var(--warn)}
+:root[data-theme="dark"] .chip--serious{color:var(--serious)}
+:root[data-theme="dark"] .chip--crit{color:#e8807f}
 .chip--gbb{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
 .swatch{width:9px;height:9px;border-radius:2px;flex:none;display:inline-block}
 
@@ -361,6 +377,19 @@ svg.chart text{font-family:var(--sans);fill:var(--ink-muted)}
   a{text-decoration:none;color:#000}
   @page{margin:14mm}
 }
+
+/* Touch sizing last, so the component rules above cannot undo it. */
+@media (pointer:coarse){
+  .iconbtn,.btn{min-height:44px}
+  .findbar select,.findbar input,.field select,.field input,
+  .formgrid input,.formgrid select,.formgrid textarea{min-height:44px}
+  details.say summary,.reportform summary{padding-block:13px}
+  .pick{padding-block:11px}
+  .goeswith button{padding-block:11px}
+  .linklike{padding-block:7px;display:inline-block}
+  .tab{padding-block:14px}
+  .tray__chip{padding-block:7px}
+}
 </style><style>
 /* ---------- needs form ---------- */
 .needs{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
@@ -414,9 +443,14 @@ svg.chart text{font-family:var(--sans);fill:var(--ink-muted)}
 .fit--full{color:#046d04;border-color:color-mix(in srgb,var(--ok) 45%,var(--line));background:color-mix(in srgb,var(--ok) 8%,var(--surface))}
 .fit--partial{color:#8a5b00;border-color:color-mix(in srgb,var(--warn) 55%,var(--line));background:color-mix(in srgb,var(--warn) 10%,var(--surface))}
 .fit--none{color:#9d2020;border-color:color-mix(in srgb,var(--crit) 40%,var(--line));background:color-mix(in srgb,var(--crit) 6%,var(--surface))}
-:root[data-theme="dark"] .fit--full,:root:not([data-theme="light"]) .fit--full{color:var(--ok)}
-:root[data-theme="dark"] .fit--partial,:root:not([data-theme="light"]) .fit--partial{color:var(--warn)}
-:root[data-theme="dark"] .fit--none,:root:not([data-theme="light"]) .fit--none{color:var(--crit)}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .fit--full{color:var(--ok)}
+  :root:not([data-theme="light"]) .fit--partial{color:var(--warn)}
+  :root:not([data-theme="light"]) .fit--none{color:var(--crit)}
+}
+:root[data-theme="dark"] .fit--full{color:var(--ok)}
+:root[data-theme="dark"] .fit--partial{color:var(--warn)}
+:root[data-theme="dark"] .fit--none{color:var(--crit)}
 
 /* ---------- gap notice ---------- */
 .gap{
@@ -451,6 +485,12 @@ svg.chart text{font-family:var(--sans);fill:var(--ink-muted)}
 }
 .cmp thead th:first-child{z-index:3;background:var(--surface-2)}
 .cmp td{min-width:190px}
+@media (max-width:560px){
+  .cmp th:first-child,.cmp td:first-child{min-width:108px}
+  .cmp td{min-width:150px}
+  .cmp th,.cmp td{padding:7px 8px}
+}
+.cmp__hint{font-size:11.5px;color:var(--ink-muted);margin:0 0 8px}
 .cmp tr[data-diff="1"] td{background:color-mix(in srgb,var(--accent) 5%,transparent)}
 .cmp tr[data-diff="1"] td:first-child{background:color-mix(in srgb,var(--accent) 5%,var(--surface))}
 .cmp .best{font-weight:600}
@@ -475,7 +515,7 @@ svg.chart text{font-family:var(--sans);fill:var(--ink-muted)}
 }
 .goeswith button{
   border:1px solid var(--line);background:var(--surface-2);border-radius:13px;
-  padding:3px 9px;font-size:11.5px;cursor:pointer;color:var(--ink-2);text-align:left;
+  padding:7px 10px;font-size:11.5px;cursor:pointer;color:var(--ink-2);text-align:left;
 }
 .goeswith button:hover{border-color:var(--accent);color:var(--accent)}
 .goeswith button b{font-weight:600;color:var(--ink)}
@@ -497,7 +537,7 @@ details.say p u{
 .reportform .formgrid{margin-top:9px;gap:8px}
 
 /* ---------- Good Better Best matrix ---------- */
-table.mx{table-layout:fixed}
+table.mx{table-layout:fixed;min-width:780px}
 .mx__h{
   color:#ffffff;font-weight:600;font-size:12px;letter-spacing:.04em;
   text-transform:none;font-family:var(--sans);padding:9px 10px;border-bottom:0;
@@ -516,7 +556,7 @@ table.mx{table-layout:fixed}
 .mx__model:last-child{margin-bottom:0}
 .mx__body{min-width:0;flex:1}
 .mx__name{font-size:11.5px;font-weight:700;letter-spacing:.02em;line-height:1.25}
-.mx__sku{font-family:var(--mono);font-size:10.5px;color:var(--ink-muted);margin-bottom:4px}
+.mx__sku{font-family:var(--mono);font-size:10.5px;color:#5a656b;margin-bottom:4px}
 .mx__reasons{margin:0 0 5px;padding-left:15px;font-size:11.5px;line-height:1.45}
 .mx__reasons li{margin-bottom:2px}
 .findbar{
@@ -1259,6 +1299,7 @@ function renderCompare(){
     + '<span class="chip">'+items.length+' selected</span>'
     + '<button class="iconbtn" id="printCompare" type="button">Print this comparison</button></div>'
     + '<p class="panel__note panel__note--tight">Rows that differ between these products are shaded, so the real choice is visible without reading every line. Limitations are shown, not left out.</p>'
+    + (items.length > 1 ? '<p class="cmp__hint">On a narrow screen the table scrolls sideways. The attribute column stays put.</p>' : '')
     + compareTableHtml(items) + '</div>';
 }
 
@@ -1386,7 +1427,8 @@ function renderData(){
     +   '<label class="field needs__span"><span class="field__label">Paste rows</span>'
     +   '<textarea id="csvIn" placeholder="AID-1234,Seat Walker 4 Wheel Alloy,MA,Seat Walkers,Best,479,135,460,7.1,yes,Both,n/a,Hands,,Active user outdoors,Alloy frame,Can be lifted into a car unaided,Higher price than steel,Required"></textarea></label></div>'
     + '<p class="hint" id="csvHint"></p>'
-    + '<div class="btnrow"><input type="file" id="csvFile" accept=".csv,text/csv" style="flex:0 0 auto">'
+    + '<div class="btnrow"><label class="field" style="flex:0 0 auto"><span class="field__label">Or choose a file</span>'
+    +   '<input type="file" id="csvFile" accept=".csv,text/csv"></label>'
     +   '<button class="btn" id="importCsv" type="button">Load catalogue</button>'
     +   '<button class="btn btn--danger" id="resetSample" type="button">Restore sample specifications</button></div></div>'
 
@@ -1475,7 +1517,7 @@ function setProducts(list){
 /* ---------- render ---------- */
 function renderTray(){
   const tray = document.getElementById("tray");
-  tray.hidden = STATE.tray.length === 0;
+  tray.hidden = STATE.tray.length === 0 || STATE.view === "compare";
   document.getElementById("trayItems").innerHTML = STATE.tray.map(k=>{
     const p = PBYSKU[k];
     return '<span class="tray__chip">'+esc(p ? p.name : k)+'<button type="button" data-drop="'+esc(k)+'" aria-label="Remove">&times;</button></span>';
@@ -1529,6 +1571,7 @@ function setView(v){
   ["match","compare","range","showroom","gaps","data"].forEach(k=>{
     document.getElementById("view-"+k).hidden = (k !== v);
   });
+  renderTray();
   saveState();
 }
 
@@ -1763,10 +1806,14 @@ function lsSet(key, value){
 function allGaps(){ return SHARED.db ? SHARED.gaps : lsGet("gaps", []); }
 function allFlags(){ return SHARED.db ? SHARED.flags : lsGet("flags", []); }
 function sharedWhere(){
+  if(!SHARED.checked) return "Checking where this will be saved.";
   return SHARED.db
     ? "Shared with everyone who can open this page."
     : "Kept in this browser only. It does not reach another person or another device.";
 }
+
+let sharedReadyResolve;
+SHARED.ready = new Promise(r=>{ sharedReadyResolve = r; });
 
 async function initShared(){
   const use = (window.claude && typeof window.claude.use === "function") ? window.claude.use.bind(window.claude) : null;
@@ -1800,6 +1847,7 @@ async function initShared(){
   } else {
     SHARED.images = lsGet("images", {});
   }
+  sharedReadyResolve();
   refreshShared("all");
 }
 
@@ -1830,6 +1878,12 @@ function requirementSnapshot(){
 }
 
 async function logGap(){
+  const btn0 = document.getElementById("logGapBtn");
+  if(!SHARED.checked){
+    if(btn0){ btn0.disabled = true; btn0.textContent = "Saving"; }
+    await SHARED.ready;
+    if(btn0) btn0.disabled = false;
+  }
   const n = STATE.need;
   const results = assess(n);
   const report = gapReport(n, results);
@@ -1877,6 +1931,7 @@ async function logGap(){
 }
 
 async function submitFlag(sku, field, value, note){
+  if(!SHARED.checked) await SHARED.ready;
   const rec = {
     createdAt:new Date().toISOString(), sku, name:(PBYSKU[sku]||{}).name || sku,
     field, value, note, status:"Open", showroom:STATE.showroom,
@@ -2194,6 +2249,7 @@ window.addEventListener("afterprint", ()=>{
   loadState();
   render();
   setView(STATE.view || "match");
+  setTimeout(()=>{ if(!SHARED.checked){ SHARED.checked = true; sharedReadyResolve(); refreshShared("gaps"); } }, 11000);
   initShared();
 })();
 </script>
