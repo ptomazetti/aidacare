@@ -30,11 +30,24 @@ Where the page is served with a shared database, gaps and reports from every sho
 
 **Compare.** Any number of products can be ticked and lined up side by side. Rows that differ are shaded, so the real choice is visible without reading every line. Stated limitations are shown, not left out.
 
-**Full range.** The controlled Good Better Best matrix by product family. Each position carries the customer or clinical need, the functional difference and the customer value. Price alone never sets a position.
+**Full range.** The Good Better Best matrix in the agreed format: exactly three columns, rows are the customer need segments that genuinely separate a decision in that range, and each cell holds at most two models with a photo and up to three reason phrases written as `label - supporting number`. A model appears in more than one cell where it honestly serves more than one need. An empty position is left empty rather than filled to tidy the grid, and the count of empty positions is shown as a prompt, not a verdict. Header colours follow the Aidacare matrix standard.
+
+The customer need rows shipped here are proposed, not approved. Change them with the `segments` column when you load the catalogue.
 
 **In the showroom.** Display, demonstration readiness and stock for the selected showroom, with required products that are not on display called out.
 
 **Catalogue.** Source and last checked date, CSV load of the real catalogue, and a plain text export of the client requirement, the shortlist and any range gaps.
+
+## Printed reports
+
+Four, all built into a dedicated print root so no page chrome reaches the paper:
+
+- **Client report** — the client requirement, each recommended option with its key figures, what it falls short on, its stated limitation, its accessories and its funding, then what the range does not cover, then the side by side table. Carries a client reference and a prepared by name.
+- **Comparison** — the requirement plus the side by side table.
+- **Matrix** — one category's Good Better Best matrix in landscape, header colours preserved.
+- **Gap list** — every logged range gap with its requirement and status.
+
+While the catalogue is sample data, every report prints a red warning at the top saying so. Each report ends with the source, the last checked date, and a line stating that it does not replace a clinical assessment.
 
 ## Data
 

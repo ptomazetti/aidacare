@@ -319,10 +319,47 @@ svg.chart text{font-family:var(--sans);fill:var(--ink-muted)}
 .footer{padding-block:20px 34px;font-size:11.5px;color:var(--ink-muted);border-top:1px solid var(--line)}
 .footer p{margin:0 0 5px;max-width:74ch}
 
+/* ---------- printed reports ---------- */
+#printroot{display:none}
+.rep__head{border-bottom:2px solid #002664;padding-bottom:10px;margin-bottom:14px}
+.rep__title{font-size:19px;font-weight:700;letter-spacing:-.02em;margin:0}
+.rep__meta{display:flex;flex-wrap:wrap;gap:3px 20px;font-size:11px;margin-top:6px;color:#333}
+.rep__meta b{font-weight:600}
+.rep h2{font-size:13px;font-weight:700;margin:16px 0 7px;padding-bottom:3px;border-bottom:1px solid #bbb}
+.rep table{width:100%;border-collapse:collapse;font-size:10.5px}
+.rep th,.rep td{border:1px solid #bbb;padding:5px 7px;text-align:left;vertical-align:top}
+.rep thead th{background:#eef1f3;font-weight:600}
+.rep__warn{border:1.5px solid #d03b3b;background:#fdf3f3;padding:8px 10px;font-size:11px;margin-bottom:12px}
+.rep__opt{border:1px solid #bbb;padding:9px 11px;margin-bottom:8px;break-inside:avoid}
+.rep__opt h3{font-size:12.5px;font-weight:700;margin:0 0 3px}
+.rep__opt p{margin:3px 0;font-size:11px}
+.rep__verdict{font-size:10.5px;font-weight:700;border:1px solid #333;padding:1px 6px;display:inline-block}
+.rep__foot{margin-top:18px;padding-top:9px;border-top:1px solid #bbb;font-size:9.5px;color:#444}
+.rep__foot p{margin:0 0 3px}
+
 @media print{
-  .masthead,.tabs,.filters,.btnrow,.iconbtn{display:none!important}
-  body{background:#fff}
+  .masthead,.tabs,.filters,.btnrow,.iconbtn,.tray,.panels,.footer,.databanner,.pick{display:none!important}
+  #printroot{display:block;color:#000}
+  body{background:#fff;color:#000;font-size:11px}
+  .wrap{max-width:none;padding-inline:0}
+  .tablewrap{overflow:visible;border:0;background:none}
   .panel{break-inside:avoid;box-shadow:none;border-color:#ccc}
+  table.mx{font-size:9.5px}
+  .mx__h--good{background:#8FCAE7!important;color:#00263f!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .mx__h--better{background:#0098DB!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .mx__h--best{background:#002664!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .mx__h--need{background:#39495A!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .mx__need{background:#f2f4f5!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  tr,.rep__opt,.mx__model{break-inside:avoid}
+  .cmp thead th{
+    color:#000;font-family:var(--sans);text-transform:none;letter-spacing:0;
+    font-size:11px;font-weight:600;background:#eef1f3!important;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  }
+  .cmp thead th .sku{font-size:9px}
+  .rep .sku{color:#555}
+  a{text-decoration:none;color:#000}
+  @page{margin:14mm}
 }
 </style><style>
 /* ---------- needs form ---------- */
@@ -458,6 +495,30 @@ details.say p u{
 .reportform summary{cursor:pointer;font-size:12px;color:var(--ink-muted);list-style:none}
 .reportform summary::-webkit-details-marker{display:none}
 .reportform .formgrid{margin-top:9px;gap:8px}
+
+/* ---------- Good Better Best matrix ---------- */
+table.mx{table-layout:fixed}
+.mx__h{
+  color:#ffffff;font-weight:600;font-size:12px;letter-spacing:.04em;
+  text-transform:none;font-family:var(--sans);padding:9px 10px;border-bottom:0;
+}
+.mx__h--need{background:#39495A;width:150px}
+.mx__h--good{background:#8FCAE7;color:#00263f}
+.mx__h--better{background:#0098DB}
+.mx__h--best{background:#002664}
+.mx__need{
+  background:var(--surface-2);font-weight:600;font-size:12.5px;
+  width:150px;vertical-align:middle;text-align:left;
+}
+.mx__cell{vertical-align:top;min-width:210px}
+.mx__cell--empty{color:var(--ink-muted);font-size:12px;font-style:normal}
+.mx__model{display:flex;gap:9px;align-items:flex-start;margin-bottom:10px}
+.mx__model:last-child{margin-bottom:0}
+.mx__body{min-width:0;flex:1}
+.mx__name{font-size:11.5px;font-weight:700;letter-spacing:.02em;line-height:1.25}
+.mx__sku{font-family:var(--mono);font-size:10.5px;color:var(--ink-muted);margin-bottom:4px}
+.mx__reasons{margin:0 0 5px;padding-left:15px;font-size:11.5px;line-height:1.45}
+.mx__reasons li{margin-bottom:2px}
 .photoup{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;margin-top:6px}
 </style>
 </head>
@@ -511,6 +572,8 @@ details.say p u{
     <button class="btn btn--ghost" id="clearTray" type="button">Clear</button>
   </div>
 
+  <section id="printroot" class="rep" aria-hidden="true"></section>
+
   <footer class="footer">
     <p><strong>What this tool does.</strong> It takes what the client in front of you needs, checks it against the controlled Good Better Best range, and says plainly which products meet every requirement, which fall short and on what, and where the range has nothing that fits.</p>
     <p><strong>What it does not do.</strong> It does not replace a clinical assessment, a prescription or an occupational therapy recommendation. Safe working load, seat width and pressure care selection must be confirmed against the current product documentation before an order is placed.</p>
@@ -560,136 +623,142 @@ const PRODUCTS = [
    swl:100,weight:6.4,seatW:430,folds:true,env:"Indoor",propel:"n/a",support:"Hands",risk:null,
    need:"Short indoor distances with a rest seat",diff:"Narrow frame, lightest fold",value:"Fits narrow hallways and a small car boot",
    limits:"Small wheels are not suited to gravel, grass or high kerbs",req:"Required",overallWidth:560,handleMin:780,handleMax:940,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[],
-   objection:"It is the lightest fold in the range, so it is the one a client can manage alone. If they never lift it, the steel model gives a bigger seat for less.",competitor:"Sits against entry level compact walkers. Wins on fold size, loses on wheel size."},
+   objection:"It is the lightest fold in the range, so it is the one a client can manage alone. If they never lift it, the steel model gives a bigger seat for less.",competitor:"Sits against entry level compact walkers. Wins on fold size, loses on wheel size.",segments:["Everyday indoor and outdoor with a seat","Lightweight to lift into a car"],reasons:["Narrow frame for tight hallways - 560 mm","Lightest fold in the range - 6.4 kg","Rest seat for short distances - 430 mm"]},
   {sku:"SMPL-MA-102",cat:"MA",family:"Seat Walkers",name:"Seat Walker 4 Wheel Steel",gbb:"Better",price:319,
    swl:135,weight:9.8,seatW:460,folds:true,env:"Both",propel:"n/a",support:"Hands",risk:null,
    need:"Daily indoor and outdoor use",diff:"Larger wheels, higher weight capacity",value:"Handles footpaths and kerbs",
    limits:"Heavier to lift into a car than the alloy model",req:"Required",overallWidth:620,handleMin:810,handleMax:970,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[{sku:"SMPL-MA-301",why:"a backup for short trips where the walker is too much"}],
-   objection:"The extra over the compact buys larger wheels and a higher load rating, which is what makes footpaths and kerbs possible.",competitor:"Competes with mid tier steel seat walkers on price parity. Wins on load rating."},
+   objection:"The extra over the compact buys larger wheels and a higher load rating, which is what makes footpaths and kerbs possible.",competitor:"Competes with mid tier steel seat walkers on price parity. Wins on load rating.",segments:["Everyday indoor and outdoor with a seat"],reasons:["Higher load rating than the compact - 135 kg","Wider rest seat - 460 mm","Handle height range - 810 to 970 mm"]},
   {sku:"SMPL-MA-103",cat:"MA",family:"Seat Walkers",name:"Seat Walker 4 Wheel Alloy",gbb:"Best",price:479,
    swl:135,weight:7.1,seatW:460,folds:true,env:"Both",propel:"n/a",support:"Hands",risk:null,
    need:"Active user outdoors who lifts the walker often",diff:"Alloy frame, lowest weight at full capacity",value:"Can be lifted into a car unaided",
    limits:"Higher price than the steel model for the same seat width",req:"Required",overallWidth:620,handleMin:810,handleMax:970,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[{sku:"SMPL-MA-301",why:"a backup for short trips where the walker is too much"}],
-   objection:"Same seat and same load rating as the steel model, 2.7 kg lighter. The client is paying for the lift, not the seat.",competitor:"Competes with lightweight alloy seat walkers. Matches on weight, and the seat is wider than most."},
+   objection:"Same seat and same load rating as the steel model, 2.7 kg lighter. The client is paying for the lift, not the seat.",competitor:"Competes with lightweight alloy seat walkers. Matches on weight, and the seat is wider than most.",segments:["Everyday indoor and outdoor with a seat","Lightweight to lift into a car"],reasons:["Full load rating at alloy weight - 135 kg at 7.1 kg","Liftable into a car unaided - 7.1 kg","Wider rest seat - 460 mm"]},
   {sku:"SMPL-MA-104",cat:"MA",family:"Seat Walkers",name:"Bariatric Seat Walker",gbb:"Best",price:869,
    swl:230,weight:14.6,seatW:560,folds:true,env:"Both",propel:"n/a",support:"Hands",risk:null,
    need:"Higher safe working load and a wider seat",diff:"Reinforced frame, widened seat and handgrip span",value:"Supports users a standard walker cannot carry",
    limits:"Too heavy for most users to lift into a car unaided",req:"Required",overallWidth:720,handleMin:850,handleMax:1010,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[],
-   objection:"There is no cheaper way to support 230 kg safely. A standard walker used above its rating is a failure waiting to happen.",competitor:"Few competitors range a bariatric seat walker at all, so availability is usually the deciding factor."},
+   objection:"There is no cheaper way to support 230 kg safely. A standard walker used above its rating is a failure waiting to happen.",competitor:"Few competitors range a bariatric seat walker at all, so availability is usually the deciding factor.",segments:["Higher weight capacity"],reasons:["Carries well above the standard range - 230 kg","Widened seat for a broader user - 560 mm","Handle height range - 850 to 1010 mm"]},
   {sku:"SMPL-MA-201",cat:"MA",family:"Walking Frames",name:"Walking Frame 2 Wheel",gbb:"Good",price:119,
    swl:135,weight:2.9,seatW:null,folds:true,env:"Indoor",propel:"n/a",support:"Hands",risk:null,
    need:"Indoor support with high stability",diff:"Front wheels only, rear stoppers",value:"Stable and simple to use",
    limits:"No seat, so it does not suit a user who needs to rest",req:"Required",overallWidth:600,handleMin:760,handleMax:900,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[],
-   objection:"It is the most stable option in the range. If the client needs to sit down on the way, they need a seat walker instead.",competitor:"Commodity product. Price parity across the market, so service and availability decide it."},
+   objection:"It is the most stable option in the range. If the client needs to sit down on the way, they need a seat walker instead.",competitor:"Commodity product. Price parity across the market, so service and availability decide it.",segments:["Indoor stability"],reasons:["Four point frame for maximum stability","Lightest walking support - 2.9 kg","Handle height range - 760 to 900 mm"]},
   {sku:"SMPL-MA-202",cat:"MA",family:"Walking Frames",name:"Forearm Support Walker",gbb:"Best",price:729,
    swl:135,weight:13.2,seatW:null,folds:true,env:"Both",propel:"n/a",support:"Forearms",risk:null,
    need:"Cannot bear weight through the wrists or hands",diff:"Forearm platforms with adjustable angle and height",value:"Keeps a user walking when a standard frame cannot",
    limits:"Bulky to transport and needs a setup appointment",req:"Required",overallWidth:640,handleMin:900,handleMax:1200,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[],
-   objection:"It is the only product in the range that works when the wrists cannot take load. There is no cheaper equivalent, because nothing else does the job.",competitor:"Specialist product with few direct competitors. Setup support is the differentiator."},
+   objection:"It is the only product in the range that works when the wrists cannot take load. There is no cheaper equivalent, because nothing else does the job.",competitor:"Specialist product with few direct competitors. Setup support is the differentiator.",segments:["Cannot load the wrists"],reasons:["Takes load through the forearms, not the wrists","Widest platform height range - 900 to 1200 mm","Load rating - 135 kg"]},
   {sku:"SMPL-MA-301",cat:"MA",family:"Walking Canes",name:"Walking Cane Folding",gbb:"Good",price:39,
    swl:100,weight:0.4,seatW:null,folds:true,env:"Both",propel:"n/a",support:"Hands",risk:null,
    need:"Occasional light support that packs away",diff:"Four section fold",value:"Fits a handbag, so it is always with the user",
    limits:"Light support only, not for a user at risk of falls",req:"Required",overallWidth:null,handleMin:810,handleMax:940,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[],
-   objection:"It folds into a bag, which is the whole point. If the client uses a cane every day, the adjustable model sets to their height properly.",competitor:"Heavily discounted category. Compete on fit and advice, not on price."},
+   objection:"It folds into a bag, which is the whole point. If the client uses a cane every day, the adjustable model sets to their height properly.",competitor:"Heavily discounted category. Compete on fit and advice, not on price.",segments:["Light occasional support"],reasons:["Folds into a handbag - 0.4 kg","Four section fold","Load rating - 100 kg"]},
   {sku:"SMPL-MA-302",cat:"MA",family:"Walking Canes",name:"Walking Cane Adjustable",gbb:"Better",price:59,
    swl:120,weight:0.5,seatW:null,folds:false,env:"Both",propel:"n/a",support:"Hands",risk:null,
    need:"Everyday support set to the correct height",diff:"Wide height range and moulded grip",value:"Set to the user rather than close enough",
    limits:"Does not fold, so it does not stow in a bag",req:"Required",overallWidth:null,handleMin:730,handleMax:990,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[],
-   objection:"A cane set to the wrong height loads the shoulder. The adjustment range is what you are paying the extra for.",competitor:"Price parity with most adjustable canes. Wins on height range."},
+   objection:"A cane set to the wrong height loads the shoulder. The adjustment range is what you are paying the extra for.",competitor:"Price parity with most adjustable canes. Wins on height range.",segments:["Light occasional support"],reasons:["Widest cane height range - 730 to 990 mm","Set to the user, not close enough","Load rating - 120 kg"]},
   {sku:"SMPL-MA-303",cat:"MA",family:"Walking Canes",name:"Quad Cane Small Base",gbb:"Better",price:69,
    swl:120,weight:1.1,seatW:null,folds:false,env:"Indoor",propel:"n/a",support:"Hands",risk:null,
    need:"Needs a cane that stands unaided",diff:"Four point base",value:"Stays upright, so transfers are more confident",
    limits:"The base catches on uneven ground outdoors",req:"Optional",overallWidth:null,handleMin:760,handleMax:940,funding:["Aged Care Package","Private"],image:null,accessories:[],
-   objection:"It stands up on its own, so the client is not bending to pick it up during a transfer.",competitor:"Common across the market. Base size is the practical difference."},
+   objection:"It stands up on its own, so the client is not bending to pick it up during a transfer.",competitor:"Common across the market. Base size is the practical difference.",segments:["Indoor stability"],reasons:["Four point base stands unaided","Load rating - 120 kg","Handle height range - 760 to 940 mm"]},
 
   {sku:"SMPL-MW-101",cat:"MW",family:"Transit",name:"Transit Wheelchair 18in",gbb:"Good",price:349,
    swl:115,weight:13.4,seatW:455,folds:true,env:"Both",propel:"Attendant",support:"Seated",risk:null,
    need:"Pushed by a carer for occasional outings",diff:"Steel frame, fixed arms and footplates",value:"Lowest entry point for carer pushed use",
    limits:"The user cannot self propel, and the frame is heavy to load",req:"Required",overallWidth:610,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[{sku:"SMPL-CU-101",why:"low pressure risk"},{sku:"SMPL-CU-102",why:"moderate pressure risk"},{sku:"SMPL-CU-103",why:"high pressure risk"}],
-   objection:"It is the lowest cost way to get the client out of the house. If the carer loads it often, the alloy model saves 4.2 kg every time.",competitor:"Entry transit chairs are a price fight. Lead on the cushion and the setup, not the chair."},
+   objection:"It is the lowest cost way to get the client out of the house. If the carer loads it often, the alloy model saves 4.2 kg every time.",competitor:"Entry transit chairs are a price fight. Lead on the cushion and the setup, not the chair.",segments:["Carer pushed"],reasons:["Lowest entry point for carer pushed use - $349","Standard seat width - 455 mm","Passes a standard doorway - 610 mm overall"]},
   {sku:"SMPL-MW-102",cat:"MW",family:"Transit",name:"Transit Lightweight Alloy",gbb:"Better",price:589,
    swl:115,weight:9.2,seatW:455,folds:true,env:"Both",propel:"Attendant",support:"Seated",risk:null,
    need:"A carer loads the chair into a car regularly",diff:"Alloy frame with quick release parts",value:"A carer can load it without help",
    limits:"Still attendant propelled only",req:"Required",overallWidth:610,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[{sku:"SMPL-CU-101",why:"low pressure risk"},{sku:"SMPL-CU-102",why:"moderate pressure risk"},{sku:"SMPL-CU-103",why:"high pressure risk"}],
-   objection:"The difference is 4.2 kg in the carer's hands, every trip. Ask how often they load it before quoting the steel one.",competitor:"Matches most lightweight transit chairs on weight. Quick release parts are the practical edge."},
+   objection:"The difference is 4.2 kg in the carer's hands, every trip. Ask how often they load it before quoting the steel one.",competitor:"Matches most lightweight transit chairs on weight. Quick release parts are the practical edge.",segments:["Carer pushed"],reasons:["4.2 kg lighter to load than the steel transit - 9.2 kg","Quick release parts for the car boot","Passes a standard doorway - 610 mm overall"]},
   {sku:"SMPL-MW-201",cat:"MW",family:"Self Propel",name:"Self Propel Steel 18in",gbb:"Good",price:449,
    swl:115,weight:16.8,seatW:455,folds:true,env:"Indoor",propel:"Self",support:"Seated",risk:null,
    need:"User propels indoors over limited distance",diff:"Steel frame, standard rims",value:"Independence at the lowest cost",
    limits:"Heavy to push over distance and hard to load into a car",req:"Required",overallWidth:620,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[{sku:"SMPL-CU-101",why:"low pressure risk"},{sku:"SMPL-CU-102",why:"moderate pressure risk"},{sku:"SMPL-CU-103",why:"high pressure risk"}],
-   objection:"It is independence at the lowest price. Over distance the client will feel every kilo of the steel frame.",competitor:"Commodity self propel. Availability and cushion pairing decide it."},
+   objection:"It is independence at the lowest price. Over distance the client will feel every kilo of the steel frame.",competitor:"Commodity self propel. Availability and cushion pairing decide it.",segments:["Self propelled everyday"],reasons:["Independence at the lowest cost - $449","Standard seat width - 455 mm","Load rating - 115 kg"]},
   {sku:"SMPL-MW-202",cat:"MW",family:"Self Propel",name:"Self Propel Lightweight Alloy",gbb:"Better",price:749,
    swl:125,weight:11.6,seatW:455,folds:true,env:"Both",propel:"Self",support:"Seated",risk:null,
    need:"Daily independent use, transported often",diff:"Alloy frame with adjustable rear axle",value:"Easier push and easier transport",
    limits:"Seat depth and back angle are not adjustable",req:"Required",overallWidth:620,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[{sku:"SMPL-CU-101",why:"low pressure risk"},{sku:"SMPL-CU-102",why:"moderate pressure risk"},{sku:"SMPL-CU-103",why:"high pressure risk"}],
-   objection:"5.2 kg lighter to push and to load than the steel chair, and the axle adjusts. For daily use that is the difference between using it and not.",competitor:"Sits against mid tier alloy self propel chairs. Axle adjustment is the point of difference."},
+   objection:"5.2 kg lighter to push and to load than the steel chair, and the axle adjusts. For daily use that is the difference between using it and not.",competitor:"Sits against mid tier alloy self propel chairs. Axle adjustment is the point of difference.",segments:["Self propelled everyday"],reasons:["5.2 kg lighter to push and load - 11.6 kg","Adjustable rear axle position","Load rating - 125 kg"]},
   {sku:"SMPL-MW-203",cat:"MW",family:"Self Propel",name:"Self Propel Premium Folding",gbb:"Best",price:1290,
    swl:125,weight:10.4,seatW:455,folds:true,env:"Both",propel:"Self",support:"Seated",risk:null,
    need:"Full time user whose seating is set to the person",diff:"Adjustable seat depth, backrest angle and axle position",value:"Configured to the user rather than a fixed seat",
    limits:"Needs a setup appointment, and lead time is longer",req:"Required",overallWidth:620,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[{sku:"SMPL-CU-101",why:"low pressure risk"},{sku:"SMPL-CU-102",why:"moderate pressure risk"},{sku:"SMPL-CU-103",why:"high pressure risk"}],
-   objection:"Seat depth, back angle and axle all adjust, so the chair is set to the client rather than the client adapting to the chair. For a full time user that is posture and skin, not comfort.",competitor:"Competes with configurable folding chairs. Lead time is the usual objection, not price."},
+   objection:"Seat depth, back angle and axle all adjust, so the chair is set to the client rather than the client adapting to the chair. For a full time user that is posture and skin, not comfort.",competitor:"Competes with configurable folding chairs. Lead time is the usual objection, not price.",segments:["Self propelled everyday","Seating set to the user"],reasons:["Seat depth, back angle and axle all adjust","Lightest self propel chair - 10.4 kg","Load rating - 125 kg"]},
   {sku:"SMPL-MW-301",cat:"MW",family:"Bariatric",name:"Bariatric Self Propel 24in",gbb:"Best",price:1450,
    swl:230,weight:22.5,seatW:610,folds:true,env:"Both",propel:"Self",support:"Seated",risk:null,
    need:"Higher safe working load and a wider seat",diff:"Reinforced frame and widened seat",value:"Suits users a standard chair cannot carry",
    limits:"Will not pass through a narrow doorway, and it is heavy to load",req:"Required",overallWidth:790,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[{sku:"SMPL-CU-104",why:"matched 610 mm width and load rating"}],
-   objection:"Nothing else in the range carries 230 kg. Check the doorway before quoting, because at 790 mm it will not pass a standard internal door.",competitor:"Limited competition at this width. Doorway access is the usual reason a sale fails."},
+   objection:"Nothing else in the range carries 230 kg. Check the doorway before quoting, because at 790 mm it will not pass a standard internal door.",competitor:"Limited competition at this width. Doorway access is the usual reason a sale fails.",segments:["Higher weight capacity"],reasons:["Carries well above the standard range - 230 kg","Widened seat for a broader user - 610 mm","Check the doorway first - 790 mm overall"]},
 
   {sku:"SMPL-CU-101",cat:"CU",family:"Pressure Care",name:"Foam Contour Cushion",gbb:"Good",price:129,
    swl:120,weight:0.9,seatW:455,folds:false,env:"Both",propel:"n/a",support:"Seated",risk:"Low",
    need:"Low pressure injury risk with comfort seating",diff:"Contoured high resilience foam",value:"Everyday comfort and basic offloading",
    limits:"Not suitable where skin integrity is already at risk",req:"Required",overallWidth:null,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[],
-   objection:"It is a comfort and basic offloading cushion. If skin integrity is already a concern, it is the wrong product at any price.",competitor:"Price parity across foam cushions. Contour shape is the difference."},
+   objection:"It is a comfort and basic offloading cushion. If skin integrity is already a concern, it is the wrong product at any price.",competitor:"Price parity across foam cushions. Contour shape is the difference.",segments:["Low pressure risk"],reasons:["Contoured high resilience foam","Standard chair width - 455 mm","Lightest pressure cushion - 0.9 kg"]},
   {sku:"SMPL-CU-102",cat:"CU",family:"Pressure Care",name:"Gel and Foam Hybrid Cushion",gbb:"Better",price:289,
    swl:140,weight:1.8,seatW:455,folds:false,env:"Both",propel:"n/a",support:"Seated",risk:"Moderate",
    need:"Moderate risk, seated for longer periods",diff:"Gel insert over contoured foam",value:"Redistributes pressure without an air pump",
    limits:"Heavier than foam, and the gel layer holds warmth",req:"Required",overallWidth:null,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[],
-   objection:"Gel redistribution without a pump to check or a cell to puncture. For moderate risk it is the lowest maintenance option that still works.",competitor:"Competes with gel and hybrid cushions across the market. Wins on maintenance, loses on weight."},
+   objection:"Gel redistribution without a pump to check or a cell to puncture. For moderate risk it is the lowest maintenance option that still works.",competitor:"Competes with gel and hybrid cushions across the market. Wins on maintenance, loses on weight.",segments:["Moderate pressure risk"],reasons:["Gel redistribution with no pump to check","Rated for moderate risk","Load rating - 140 kg"]},
   {sku:"SMPL-CU-103",cat:"CU",family:"Pressure Care",name:"Air Cell Cushion",gbb:"Best",price:640,
    swl:150,weight:1.2,seatW:455,folds:false,env:"Both",propel:"n/a",support:"Seated",risk:"High",
    need:"High pressure injury risk, full time sitting",diff:"Adjustable air cells, immersion set to the user",value:"Highest offloading where skin integrity is at risk",
    limits:"Needs checking and reinflating, and it can be punctured",req:"Required",overallWidth:null,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[],
-   objection:"For a full time sitter at high risk, the cost of the cushion is small against the cost of a pressure injury. It does need checking and reinflating.",competitor:"Sits against adjustable air cell cushions. Immersion adjustment is the clinical argument."},
+   objection:"For a full time sitter at high risk, the cost of the cushion is small against the cost of a pressure injury. It does need checking and reinflating.",competitor:"Sits against adjustable air cell cushions. Immersion adjustment is the clinical argument.",segments:["High pressure risk"],reasons:["Air cells set to the user's immersion","Rated for high risk","Load rating - 150 kg"]},
   {sku:"SMPL-CU-104",cat:"CU",family:"Pressure Care",name:"Bariatric Foam Cushion",gbb:"Better",price:239,
    swl:250,weight:2.4,seatW:610,folds:false,env:"Both",propel:"n/a",support:"Seated",risk:"Low",
    need:"Higher safe working load with a wider seat",diff:"High density foam across a wider base",value:"Supports a heavier user on a wider chair",
    limits:"Low risk offloading only, despite the higher capacity",req:"Required",overallWidth:null,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[],
-   objection:"It carries the load and the width, but it is still a low risk offloading cushion. Do not sell it as pressure care for a high risk client.",competitor:"Few bariatric cushions are ranged at this width. Availability usually decides it."},
+   objection:"It carries the load and the width, but it is still a low risk offloading cushion. Do not sell it as pressure care for a high risk client.",competitor:"Few bariatric cushions are ranged at this width. Availability usually decides it.",segments:["Higher weight capacity"],reasons:["Carries well above the standard range - 250 kg","Widened base for a broader chair - 610 mm","Rated for low risk only"]},
   {sku:"SMPL-CU-201",cat:"CU",family:"Comfort",name:"Wedge Cushion",gbb:"Good",price:79,
    swl:110,weight:0.6,seatW:400,folds:false,env:"Indoor",propel:"n/a",support:"Seated",risk:"Low",
    need:"Posture support when sitting",diff:"Angled foam wedge",value:"Improves sitting posture in an existing chair",
    limits:"Comfort product, not a pressure care cushion",req:"Optional",overallWidth:null,handleMin:null,handleMax:null,funding:["Private"],image:null,accessories:[],
-   objection:"It is a posture product for an existing chair, not pressure care. Say so plainly.",competitor:"Widely available and heavily discounted online."},
+   objection:"It is a posture product for an existing chair, not pressure care. Say so plainly.",competitor:"Widely available and heavily discounted online.",segments:["Comfort and posture"],reasons:["Angled wedge for sitting posture","Fits an existing chair - 400 mm","Lightest cushion in the range - 0.6 kg"]},
   {sku:"SMPL-CU-202",cat:"CU",family:"Comfort",name:"Ring Cushion",gbb:"Good",price:49,
    swl:110,weight:0.4,seatW:400,folds:false,env:"Indoor",propel:"n/a",support:"Seated",risk:"Low",
    need:"Localised comfort after surgery",diff:"Open centre design",value:"Relieves a specific contact point",
    limits:"Can increase pressure around the opening if used long term",req:"Optional",overallWidth:null,handleMin:null,handleMax:null,funding:["Private"],image:null,accessories:[],
-   objection:"It relieves one contact point after surgery. It is not a long term seating solution and can make pressure worse around the opening.",competitor:"Commodity. Advice is the only differentiator."},
+   objection:"It relieves one contact point after surgery. It is not a long term seating solution and can make pressure worse around the opening.",competitor:"Commodity. Advice is the only differentiator.",segments:["Comfort and posture"],reasons:["Open centre relieves one contact point","Fits an existing chair - 400 mm","Lowest price in the range - $49"]},
 
   {sku:"SMPL-BD-101",cat:"BD",family:"Bed Accessories",name:"Bed Stick",gbb:"Good",price:89,
    swl:100,weight:1.6,seatW:null,folds:false,env:"Indoor",propel:"n/a",support:"Hands",risk:null,
    need:"Help to sit up and get out of bed",diff:"Single pole with a mattress strap fixing",value:"Simple bed transfer support",
    limits:"Not suitable where there is any entrapment risk",req:"Required",overallWidth:null,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[{sku:"SMPL-BD-201",why:"eating and activity once they are sitting up"}],
-   objection:"It is the simplest thing that gets the client out of bed. If they need the grip at a set height, the lever adjusts and this does not.",competitor:"Commodity product. Entrapment assessment is where you add value."},
+   objection:"It is the simplest thing that gets the client out of bed. If they need the grip at a set height, the lever adjusts and this does not.",competitor:"Commodity product. Entrapment assessment is where you add value.",segments:["Getting out of bed"],reasons:["Simplest bed transfer support - $89","Mattress strap fixing, no bed frame needed","Load rating - 100 kg"]},
   {sku:"SMPL-BD-102",cat:"BD",family:"Bed Accessories",name:"Bed Lever Adjustable",gbb:"Better",price:159,
    swl:120,weight:3.1,seatW:null,folds:false,env:"Indoor",propel:"n/a",support:"Hands",risk:null,
    need:"Needs a set grip height and position",diff:"Adjustable height with a swing away arm",value:"Set to the user and moves out of the way",
    limits:"Needs a compatible bed frame",req:"Required",overallWidth:null,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[{sku:"SMPL-BD-201",why:"eating and activity once they are sitting up"}],
-   objection:"It sets to the client's grip height and swings out of the way for transfers. A fixed stick does neither.",competitor:"Sits against adjustable bed levers. Bed frame compatibility is the usual blocker."},
+   objection:"It sets to the client's grip height and swings out of the way for transfers. A fixed stick does neither.",competitor:"Sits against adjustable bed levers. Bed frame compatibility is the usual blocker.",segments:["Getting out of bed"],reasons:["Grip height sets to the user","Swing away arm clears the transfer","Load rating - 120 kg"]},
   {sku:"SMPL-BD-103",cat:"BD",family:"Bed Accessories",name:"Bed Rail Full Length",gbb:"Best",price:319,
    swl:140,weight:6.8,seatW:null,folds:false,env:"Indoor",propel:"n/a",support:"Hands",risk:null,
    need:"Continuous support along the bed edge",diff:"Full length rail with a wider fitting range",value:"Support along the whole transfer path",
    limits:"Entrapment risk must be assessed against the mattress and frame",req:"Required",overallWidth:null,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[{sku:"SMPL-BD-201",why:"eating and activity once they are sitting up"}],
-   objection:"Support along the whole transfer path rather than one grip point. Entrapment must be assessed against the mattress and frame first.",competitor:"Competes with full length rails. Fitting range is the practical difference."},
+   objection:"Support along the whole transfer path rather than one grip point. Entrapment must be assessed against the mattress and frame first.",competitor:"Competes with full length rails. Fitting range is the practical difference.",segments:["Continuous edge support"],reasons:["Support along the whole transfer path","Wider fitting range than a single lever","Load rating - 140 kg"]},
   {sku:"SMPL-BD-201",cat:"BD",family:"Bed Furniture",name:"Overbed Table",gbb:"Good",price:189,
    swl:25,weight:9.4,seatW:null,folds:false,env:"Indoor",propel:"n/a",support:"n/a",risk:null,
    need:"Eating and activity while in bed",diff:"Height adjustable top on castors",value:"Brings the surface to the user",
    limits:"The stated load is for the table top, not for body weight",req:"Required",overallWidth:null,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[],
-   objection:"The stated load is for the table top. It is not something to lean on getting out of bed.",competitor:"Commodity. Castor quality and height range are the difference."},
+   objection:"The stated load is for the table top. It is not something to lean on getting out of bed.",competitor:"Commodity. Castor quality and height range are the difference.",segments:["Reach and storage at the bed"],reasons:["Height adjustable top on castors","Brings the surface to the user","Table top load - 25 kg"]},
   {sku:"SMPL-BD-202",cat:"BD",family:"Bed Furniture",name:"Bedside Cabinet",gbb:"Better",price:249,
    swl:20,weight:12.2,seatW:null,folds:false,env:"Indoor",propel:"n/a",support:"n/a",risk:null,
    need:"Storage within reach of the bed",diff:"Lockable drawer on castors",value:"Keeps essentials reachable and secure",
    limits:"Not a transfer support and must not be leant on",req:"Optional",overallWidth:null,handleMin:null,handleMax:null,funding:["Private"],image:null,accessories:[],
-   objection:"It is storage on castors with a lockable drawer. It is not a transfer support and must never be leant on.",competitor:"Furniture category. Finish and lock quality decide it."}
+   objection:"It is storage on castors with a lockable drawer. It is not a transfer support and must never be leant on.",competitor:"Furniture category. Finish and lock quality decide it.",segments:["Reach and storage at the bed"],reasons:["Lockable drawer keeps essentials secure","Castors move it clear of the bed","Not a transfer support"]}
 ];
+const NEED_SEGMENTS = {
+  MA:["Light occasional support","Indoor stability","Everyday indoor and outdoor with a seat","Lightweight to lift into a car","Higher weight capacity","Cannot load the wrists"],
+  MW:["Carer pushed","Self propelled everyday","Seating set to the user","Higher weight capacity"],
+  CU:["Low pressure risk","Moderate pressure risk","High pressure risk","Higher weight capacity","Comfort and posture"],
+  BD:["Getting out of bed","Continuous edge support","Reach and storage at the bed"]
+};
 const PBYSKU = Object.fromEntries(PRODUCTS.map(p=>[p.sku,p]));
 
 /* ---------- sample availability, deterministic ---------- */
@@ -723,7 +792,7 @@ const FUNDING = ["NDIS","DVA","Aged Care Package","Private"];
 const BLANK_NEED = {
   cat:"ALL", userWeight:"", seatWidth:"", doorway:"", handleHeight:"",
   env:"Any", transport:"Any", propel:"Any", wrists:"Any", risk:"Any",
-  funding:"Any", budget:"", notes:""
+  funding:"Any", budget:"", notes:"", clientRef:"", preparedBy:""
 };
 
 const CRITERIA = [
@@ -923,8 +992,13 @@ function needsForm(){
     + sel("n_wrists","Can take weight through hands and wrists", [{v:"Any",l:"Not a deciding factor"},{v:"Yes",l:"Yes"},{v:"No",l:"No, needs forearm support"}], n.wrists)
     + sel("n_risk","Pressure injury risk", [{v:"Any",l:"Not a deciding factor"},{v:"Low",l:"Low"},{v:"Moderate",l:"Moderate"},{v:"High",l:"High"}], n.risk)
     + num("n_budget","Budget ceiling ($)", n.budget, "e.g. 500")
+    + '<label class="field"><span class="field__label">Client reference</span>'
+    +   '<input id="n_clientRef" type="text" value="'+esc(n.clientRef)+'" placeholder="Name or quote number for the printed report"></label>'
+    + '<label class="field"><span class="field__label">Prepared by</span>'
+    +   '<input id="n_preparedBy" type="text" value="'+esc(n.preparedBy)+'" placeholder="Your name"></label>'
     + '</div>'
-    + '<div class="btnrow"><button class="btn btn--ghost" id="clearNeed" type="button">Start a new client</button></div>';
+    + '<div class="btnrow"><button class="btn" id="printClient" type="button">Print client report</button>'
+    +   '<button class="btn btn--ghost" id="clearNeed" type="button">Start a new client</button></div>';
 }
 
 /* ---------- match view ---------- */
@@ -1037,11 +1111,8 @@ function renderMatch(){
 }
 
 /* ---------- compare view ---------- */
-function renderCompare(){
-  if(!STATE.tray.length){
-    return '<div class="panel"><p class="empty">Nothing selected yet. Tick <strong>Compare</strong> on two or more products and they will line up side by side here, with the rows that actually differ picked out.</p></div>';
-  }
-  const items = STATE.tray.map(k=>PBYSKU[k]).filter(Boolean);
+/* One table builder, used on screen and on paper. */
+function compareTableHtml(items){
   const n = STATE.need;
   const rows = [
     { label:"Range position", get:p=>gbbChip(p.gbb), raw:p=>p.gbb },
@@ -1049,16 +1120,17 @@ function renderCompare(){
     { label:"Customer or clinical need", get:p=>esc(p.need), raw:p=>p.need },
     { label:"Main functional difference", get:p=>esc(p.diff), raw:p=>p.diff },
     { label:"Main customer value", get:p=>esc(p.value), raw:p=>p.value },
+    { label:"Reasons to buy", get:p=>(p.reasons||[]).slice(0,3).map(r=>esc(r)).join("<br>"), raw:p=>(p.reasons||[]).join("|") },
     { label:"Safe working load", get:p=>p.swl+" kg", raw:p=>p.swl },
     { label:"Seat width", get:p=>p.seatW ? p.seatW+" mm" : "Not applicable", raw:p=>p.seatW },
+    { label:"Overall width", get:p=>p.overallWidth ? p.overallWidth+" mm" : "Not applicable", raw:p=>p.overallWidth },
+    { label:"Handle height range", get:p=>p.handleMin ? p.handleMin+" to "+p.handleMax+" mm" : "Not applicable", raw:p=>p.handleMin },
     { label:"Product weight", get:p=>p.weight+" kg", raw:p=>p.weight },
     { label:"Folds for transport", get:p=>p.folds?"Yes":"No", raw:p=>p.folds },
     { label:"Where it suits", get:p=>esc(p.env), raw:p=>p.env },
     { label:"Propulsion", get:p=>p.propel==="n/a"?"Not applicable":esc(p.propel), raw:p=>p.propel },
     { label:"Takes weight through", get:p=>p.support==="n/a"?"Not applicable":esc(p.support), raw:p=>p.support },
     { label:"Pressure risk rating", get:p=>p.risk?esc(p.risk):"Not a pressure care product", raw:p=>p.risk },
-    { label:"Overall width", get:p=>p.overallWidth ? p.overallWidth+" mm" : "Not applicable", raw:p=>p.overallWidth },
-    { label:"Handle height range", get:p=>p.handleMin ? p.handleMin+" to "+p.handleMax+" mm" : "Not applicable", raw:p=>p.handleMin },
     { label:"Funding schemes", get:p=>esc((p.funding||[]).join(", ")), raw:p=>(p.funding||[]).join(", ") },
     { label:"Usually goes with", get:p=>{
         const a = accessoriesFor(p);
@@ -1076,9 +1148,8 @@ function renderCompare(){
   if(active.length){
     rows.unshift({ label:"Fit against this client", get:p=>{
       const r = evaluate(p, n);
-      const cls = r.fit;
       const txt = r.fit==="full" ? "Meets every requirement" : r.fit==="partial" ? "Short on preference" : r.hardMiss+" requirement"+(r.hardMiss===1?"":"s")+" not met";
-      return '<span class="fit fit--'+cls+'">'+txt+'</span>';
+      return '<span class="fit fit--'+r.fit+'">'+txt+'</span>';
     }, raw:p=>evaluate(p,n).fit });
   }
 
@@ -1089,43 +1160,62 @@ function renderCompare(){
       + items.map(p=>'<td>'+r.get(p)+'</td>').join("") + '</tr>';
   }).join("");
 
-  return '<div class="panel"><div class="panel__head"><h2 class="panel__title">Side by side</h2>'
-    + '<span class="chip">'+items.length+' selected</span></div>'
-    + '<p class="panel__note panel__note--tight">Rows that differ between these products are shaded, so the real choice is visible without reading every line. Limitations are shown, not left out.</p>'
-    + '<div class="tablewrap"><table class="cmp"><thead><tr><th>Attribute</th>'
+  return '<div class="tablewrap"><table class="cmp"><thead><tr><th>Attribute</th>'
     + items.map(p=>'<th>'+thumb(p)+'<br>'+esc(p.name)+'<span class="sku">'+esc(p.sku)+'</span></th>').join("")
-    + '</tr></thead><tbody>'+body+'</tbody></table></div></div>';
+    + '</tr></thead><tbody>'+body+'</tbody></table></div>';
 }
 
-/* ---------- full range: the Good Better Best matrix ---------- */
+function renderCompare(){
+  if(!STATE.tray.length){
+    return '<div class="panel"><p class="empty">Nothing selected yet. Tick <strong>Compare</strong> on two or more products and they will line up side by side here, with the rows that actually differ picked out.</p></div>';
+  }
+  const items = STATE.tray.map(k=>PBYSKU[k]).filter(Boolean);
+  return '<div class="panel"><div class="panel__head"><h2 class="panel__title">Side by side</h2>'
+    + '<span class="chip">'+items.length+' selected</span>'
+    + '<button class="iconbtn" id="printCompare" type="button">Print this comparison</button></div>'
+    + '<p class="panel__note panel__note--tight">Rows that differ between these products are shaded, so the real choice is visible without reading every line. Limitations are shown, not left out.</p>'
+    + compareTableHtml(items) + '</div>';
+}
+
+/* ---------- the Good Better Best matrix ----------
+   Three columns, always Good, Better and Best. Rows are the customer
+   need segments for the range. A cell holds at most two models, each
+   with a photo and up to three reason phrases. An empty cell is left
+   empty rather than filled to make the grid look tidy. */
 function renderRange(){
   const cats = STATE.need.cat === "ALL" ? CATEGORIES : CATEGORIES.filter(c=>c.id===STATE.need.cat);
-  return cats.map(c=>{
-    const fams = [...new Set(PRODUCTS.filter(p=>p.cat===c.id).map(p=>p.family))];
-    const body = fams.map(f=>{
+  const body = cats.map(c=>{
+    const segs = NEED_SEGMENTS[c.id] || [];
+    const rows = segs.map(seg=>{
       const cells = GBB.map(g=>{
-        const list = PRODUCTS.filter(p=>p.cat===c.id && p.family===f && p.gbb===g);
-        if(!list.length) return '<td><span style="color:var(--ink-muted)">No product in this position</span></td>';
-        return '<td>'+list.map(p=>{
-          const a = av(p.sku);
-          return '<div style="margin-bottom:9px;display:flex;gap:9px;align-items:flex-start">'
-            + thumb(p) + '<div style="min-width:0">'
-            + '<strong>'+esc(p.name)+'</strong> <span class="sku">'+esc(p.sku)+' &middot; '+money(p.price)+'</span>'
-            + '<div style="font-size:12px;color:var(--ink-2);margin-top:3px">'+esc(p.value)+'</div>'
-            + '<div style="margin-top:5px;display:flex;gap:5px;flex-wrap:wrap">'
-            +   '<span class="chip '+(a.displayed?"chip--ok":"chip--crit")+'"><span class="chip__dot"></span>'+(a.displayed?"Displayed":"Not displayed")+'</span>'
-            +   '<label class="pick"><input type="checkbox" data-pick="'+esc(p.sku)+'"'+(STATE.tray.includes(p.sku)?" checked":"")+'> Compare</label>'
-            + '</div></div></div>';
-        }).join("")+'</td>';
+        const list = PRODUCTS.filter(p=>p.cat===c.id && p.gbb===g && (p.segments||[]).indexOf(seg) !== -1).slice(0,2);
+        if(!list.length) return '<td class="mx__cell mx__cell--empty">No product in this position</td>';
+        return '<td class="mx__cell">' + list.map(p=>
+            '<div class="mx__model">'
+          +   thumb(p)
+          +   '<div class="mx__body">'
+          +     '<div class="mx__name">'+esc(p.name.toUpperCase())+'</div>'
+          +     '<div class="mx__sku">'+esc(p.sku)+' &middot; '+money(p.price)+'</div>'
+          +     '<ul class="mx__reasons">'+(p.reasons||[]).slice(0,3).map(r=>'<li>'+esc(r)+'</li>').join("")+'</ul>'
+          +     '<label class="pick"><input type="checkbox" data-pick="'+esc(p.sku)+'"'+(STATE.tray.includes(p.sku)?" checked":"")+'> Compare</label>'
+          +   '</div></div>').join("") + '</td>';
       }).join("");
-      return '<tr><td><strong>'+esc(f)+'</strong></td>'+cells+'</tr>';
+      return '<tr><th scope="row" class="mx__need">'+esc(seg)+'</th>'+cells+'</tr>';
     }).join("");
-    return '<div class="panel"><div class="panel__head"><h2 class="panel__title">'+esc(c.name)+'</h2></div>'
-      + '<p class="panel__note panel__note--tight">Good, Better and Best sit on genuine differences in customer need, function and value. An empty position is a gap only where a client requirement supports it.</p>'
-      + '<div class="tablewrap"><table class="cmp"><thead><tr><th>Product family</th>'
-      + GBB.map(g=>'<th><span class="swatch" style="background:var('+GBBVAR[g]+');margin-right:6px"></span>'+g+'</th>').join("")
-      + '</tr></thead><tbody>'+body+'</tbody></table></div></div>';
+    const empties = segs.reduce((t,seg)=>t + GBB.filter(g=>!PRODUCTS.some(p=>p.cat===c.id && p.gbb===g && (p.segments||[]).indexOf(seg) !== -1)).length, 0);
+    return '<div class="panel"><div class="panel__head"><h2 class="panel__title">'+esc(c.name)+'</h2>'
+      + '<span class="chip">'+segs.length+' customer needs</span>'
+      + '<span class="chip '+(empties?"chip--warn":"chip--ok")+'"><span class="chip__dot"></span>'+empties+' empty positions</span>'
+      + '<button class="iconbtn" data-printmatrix="'+c.id+'" type="button">Print this matrix</button></div>'
+      + '<p class="panel__note panel__note--tight">Rows are the customer needs that genuinely separate a decision in this range. An empty position is a gap only where a client requirement supports it, so treat the count above as a prompt, not a verdict.</p>'
+      + '<div class="tablewrap"><table class="mx"><thead><tr>'
+      +   '<th class="mx__h mx__h--need">Customer need</th>'
+      +   '<th class="mx__h mx__h--good">Good</th>'
+      +   '<th class="mx__h mx__h--better">Better</th>'
+      +   '<th class="mx__h mx__h--best">Best</th>'
+      + '</tr></thead><tbody>'+rows+'</tbody></table></div></div>';
   }).join("");
+  return '<div class="caveat">The customer need rows are <strong>proposed</strong>, not approved. They are the segments that separate a decision in each range as the tool sees it. Change them with the <code>segments</code> column when you load the catalogue.</div>' + body;
 }
 
 /* ---------- in the showroom ---------- */
@@ -1355,7 +1445,8 @@ function readNeed(){
   const n = STATE.need;
   const map = { n_cat:"cat", n_weight:"userWeight", n_seatWidth:"seatWidth", n_doorway:"doorway",
                 n_handleHeight:"handleHeight", n_env:"env", n_transport:"transport", n_propel:"propel",
-                n_wrists:"wrists", n_risk:"risk", n_funding:"funding", n_budget:"budget" };
+                n_wrists:"wrists", n_risk:"risk", n_funding:"funding", n_budget:"budget",
+                n_clientRef:"clientRef", n_preparedBy:"preparedBy" };
   Object.keys(map).forEach(id=>{ const v = g(id); if(v !== null) n[map[id]] = v; });
   const sr = g("n_showroom"); if(sr) STATE.showroom = sr;
 }
@@ -1509,7 +1600,18 @@ document.addEventListener("click", ev=>{
     }
     return;
   }
-  if(t.id === "printBtn"){ window.print(); return; }
+  if(t.id === "printClient"){ printClientReport(); return; }
+  if(t.id === "printCompare"){ printComparison(); return; }
+  if(t.id === "printGaps"){ printGaps(); return; }
+  if(t.dataset.printmatrix){ printMatrix(t.dataset.printmatrix); return; }
+  if(t.id === "printBtn"){
+    const v = STATE.view;
+    if(v === "compare" && STATE.tray.length) printComparison();
+    else if(v === "gaps") printGaps();
+    else if(v === "range") printMatrix(STATE.need.cat === "ALL" ? CATEGORIES[0].id : STATE.need.cat);
+    else printClientReport();
+    return;
+  }
   if(t.id === "themeBtn"){
     const cur = document.documentElement.getAttribute("data-theme");
     const next = cur === "dark" ? "light" : cur === "light" ? "dark" : (matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "dark");
@@ -1779,7 +1881,8 @@ function renderGaps(){
     + counts
     + '<div class="tablewrap"><table><thead><tr><th>Logged</th><th>Category</th><th>Client requirement</th>'
     + '<th>What the range could not meet</th><th>Status</th><th></th></tr></thead><tbody>'+gapRows+'</tbody></table></div>'
-    + '<div class="btnrow"><button class="btn btn--ghost" id="exportGaps" type="button">Build export</button></div>'
+    + '<div class="btnrow"><button class="btn btn--ghost" id="exportGaps" type="button">Build export</button>'
+    +   '<button class="btn btn--ghost" id="printGaps" type="button">Print gap list</button></div>'
     + '<div class="formgrid" style="margin-top:12px"><label class="field needs__span" id="gapExportWrap" hidden>'
     +   '<textarea id="gapExportBox" readonly style="min-height:110px;font-family:var(--mono);font-size:11px"></textarea></label></div></div>'
     + '<div class="panel"><div class="panel__head"><h2 class="panel__title">Specification reports</h2>'
@@ -1807,6 +1910,163 @@ function gapExportText(){
   });
   return lines.join("\n");
 }
+
+
+/* ============================================================
+   Printed reports. Four of them, all built into one print root so
+   the page chrome never reaches the paper.
+   ============================================================ */
+function repHead(title){
+  const n = STATE.need;
+  const sr = SHOWROOMS.find(x=>x.id===STATE.showroom);
+  const bits = [
+    ["Date", new Date().toLocaleDateString("en-AU", { day:"numeric", month:"long", year:"numeric" })],
+    ["Showroom", sr ? sr.name + " (" + sr.profile + ")" : STATE.showroom]
+  ];
+  if(n.clientRef) bits.unshift(["Client", n.clientRef]);
+  if(n.preparedBy) bits.push(["Prepared by", n.preparedBy]);
+  return '<div class="rep__head"><h1 class="rep__title">'+esc(title)+'</h1>'
+    + '<div class="rep__meta">' + bits.map(b=>'<span><b>'+esc(b[0])+':</b> '+esc(b[1])+'</span>').join("") + '</div></div>'
+    + (STATE.meta.isSample
+        ? '<div class="rep__warn"><strong>Sample specifications, not the Aidacare catalogue.</strong> '
+          + 'Every figure below is a generated sample value. Do not quote any of it to a customer.</div>'
+        : '');
+}
+function repFoot(){
+  return '<div class="rep__foot">'
+    + '<p><strong>Source:</strong> '+esc(STATE.meta.source)
+    +   (STATE.meta.isSample ? ' (sample values)' : ', last checked ' + esc(STATE.meta.updated || "date not recorded")) + '</p>'
+    + '<p>This report does not replace a clinical assessment, a prescription or an occupational therapy recommendation. '
+    +   'Safe working load, seat width and pressure care selection must be confirmed against current product documentation before an order is placed.</p>'
+    + '<p>Stock and display status is as recorded for the showroom named above and may have changed.</p></div>';
+}
+function repRequirement(){
+  const n = STATE.need;
+  const rows = requirementSnapshot();
+  if(!rows.length) return '<h2>What the client needs</h2><p style="font-size:11px">Nothing was recorded.</p>';
+  return '<h2>What the client needs</h2><table><tbody>'
+    + rows.map(r=>'<tr><th style="width:34%">'+esc(r.label)+'</th><td>'+esc(r.value)+'</td></tr>').join("")
+    + (n.cat !== "ALL" ? '<tr><th>Category</th><td>'+esc(CATNAME[n.cat])+'</td></tr>' : '')
+    + '</tbody></table>';
+}
+
+function printClientReport(){
+  const n = STATE.need;
+  const results = assess(n);
+  const report = gapReport(n, results);
+  const chosen = STATE.tray.length
+    ? STATE.tray.map(k=>PBYSKU[k]).filter(Boolean)
+    : results.filter(r=>r.fit === "full").slice(0,3).map(r=>r.product);
+
+  let opts = '<h2>Options' + (STATE.tray.length ? '' : ' that meet every requirement') + '</h2>';
+  if(!chosen.length){
+    opts += '<p style="font-size:11px">No product in the range meets every requirement. See the section below.</p>';
+  } else {
+    opts += chosen.map(p=>{
+      const r = evaluate(p, n), a = av(p.sku), acc = accessoriesFor(p);
+      const verdict = r.fit === "full" ? "Meets every requirement"
+        : r.fit === "partial" ? "Short on preference only"
+        : r.hardMiss + " requirement" + (r.hardMiss===1?"":"s") + " not met";
+      const misses = r.checks.filter(c=>c.r === "no");
+      return '<div class="rep__opt"><h3>'+esc(p.name)+' &nbsp;<span class="rep__verdict">'+esc(verdict)+'</span></h3>'
+        + '<p><strong>'+esc(p.sku)+'</strong> &middot; '+esc(p.gbb)+' &middot; '+money(p.price)
+        +   ' &middot; '+esc(CATNAME[p.cat])+' &middot; '+(a.displayed?"on display":"not on display")+', '+esc(a.stock.toLowerCase())+'</p>'
+        + '<p><strong>For:</strong> '+esc(p.need)+'</p>'
+        + '<p><strong>Why this one:</strong> '+esc(p.value)+'</p>'
+        + '<p><strong>Key figures:</strong> load '+p.swl+' kg'
+        +   (p.seatW ? ', seat '+p.seatW+' mm' : '')
+        +   (p.overallWidth ? ', overall '+p.overallWidth+' mm' : '')
+        +   (p.handleMin ? ', handles '+p.handleMin+' to '+p.handleMax+' mm' : '')
+        +   ', weight '+p.weight+' kg'+(p.risk ? ', rated for '+p.risk.toLowerCase()+' pressure risk' : '')+'</p>'
+        + (misses.length ? '<p><strong>Falls short on:</strong> '+esc(misses.map(m=>m.label+", "+m.detail).join("; "))+'</p>' : '')
+        + '<p><strong>Limitation to note:</strong> '+esc(p.limits)+'</p>'
+        + (acc.length ? '<p><strong>Usually supplied with:</strong> '+acc.map(x=>esc(x.product.name)+' ('+esc(x.why)+')').join(", ")+'</p>' : '')
+        + '<p><strong>Funding:</strong> '+esc((p.funding||[]).join(", ") || "not recorded")+'</p>'
+        + '</div>';
+    }).join("");
+  }
+
+  let gapSec = "";
+  if(report.any){
+    gapSec = '<h2>What the range does not cover</h2>';
+    gapSec += report.impossible.length
+      ? '<p style="font-size:11px">Nothing in the range meets the following.</p><table><tbody>'
+        + report.impossible.map(m=>'<tr><th style="width:34%">'+esc(m.label)+'</th><td>'
+            + (m.nearest ? 'closest is '+esc(m.nearest.name)+', '+esc(m.detail) : 'no product meets this') + '</td></tr>').join("")
+        + '</tbody></table>'
+      : '<p style="font-size:11px">Each requirement on its own has a product that meets it, but no single product meets all '
+        + report.activeCount + ' together.</p>';
+    if(report.nearest.length){
+      gapSec += '<table><thead><tr><th>Closest in the range</th><th>Price</th><th>Falls short on</th></tr></thead><tbody>'
+        + report.nearest.map(x=>'<tr><td>'+esc(x.product.name)+'</td><td>'+money(x.product.price)+'</td><td>'
+            + esc(x.missed.join("; ") || "nothing") + '</td></tr>').join("")
+        + '</tbody></table>';
+    }
+  }
+
+  const cmp = (chosen.length > 1) ? '<h2>Side by side</h2>' + compareTableHtml(chosen) : "";
+  openPrint(repHead("Product recommendation") + repRequirement() + opts + gapSec + cmp + repFoot());
+}
+
+function printComparison(){
+  const items = STATE.tray.map(k=>PBYSKU[k]).filter(Boolean);
+  if(!items.length) return;
+  openPrint(repHead("Product comparison") + repRequirement()
+    + '<h2>Side by side</h2>' + compareTableHtml(items) + repFoot());
+}
+
+function printMatrix(catId){
+  const c = CATEGORIES.find(x=>x.id === catId);
+  if(!c) return;
+  const segs = NEED_SEGMENTS[catId] || [];
+  const rows = segs.map(seg=>{
+    const cells = GBB.map(g=>{
+      const list = PRODUCTS.filter(p=>p.cat===catId && p.gbb===g && (p.segments||[]).indexOf(seg) !== -1).slice(0,2);
+      if(!list.length) return '<td class="mx__cell mx__cell--empty">No product in this position</td>';
+      return '<td class="mx__cell">' + list.map(p=>
+          '<div class="mx__model">' + thumb(p) + '<div class="mx__body">'
+        + '<div class="mx__name">'+esc(p.name.toUpperCase())+'</div>'
+        + '<div class="mx__sku">'+esc(p.sku)+' &middot; '+money(p.price)+'</div>'
+        + '<ul class="mx__reasons">'+(p.reasons||[]).slice(0,3).map(r=>'<li>'+esc(r)+'</li>').join("")+'</ul>'
+        + '</div></div>').join("") + '</td>';
+    }).join("");
+    return '<tr><th scope="row" class="mx__need">'+esc(seg)+'</th>'+cells+'</tr>';
+  }).join("");
+  openPrint(repHead(c.name + " Good Better Best matrix")
+    + '<table class="mx"><thead><tr><th class="mx__h mx__h--need">Customer need</th>'
+    + '<th class="mx__h mx__h--good">Good</th><th class="mx__h mx__h--better">Better</th>'
+    + '<th class="mx__h mx__h--best">Best</th></tr></thead><tbody>'+rows+'</tbody></table>'
+    + '<p style="font-size:10px;margin-top:8px">Customer need rows are proposed, not approved. An empty position is a gap only where a client requirement supports it.</p>'
+    + repFoot());
+}
+
+function printGaps(){
+  const list = allGaps();
+  const rows = list.length ? list.map(g=>
+    '<tr><td>'+esc((g.createdAt||"").slice(0,10))+'</td><td>'+esc(g.showroomName||"")+'</td>'
+    + '<td>'+esc(g.category||"")+'</td>'
+    + '<td>'+(g.requirement||[]).map(r=>esc(r.label)+": "+esc(r.value)).join("<br>")+'</td>'
+    + '<td>'+((g.missing||[]).length
+        ? (g.missing||[]).map(m=>esc(m.label)).join("<br>")
+        : esc(g.kind || "No single product meets the combination"))+'</td>'
+    + '<td>'+esc(g.status||"Open")+'</td></tr>').join("")
+    : '<tr><td colspan="6">Nothing logged.</td></tr>';
+  openPrint(repHead("Range gaps")
+    + '<table><thead><tr><th>Logged</th><th>Showroom</th><th>Category</th>'
+    + '<th>Client requirement</th><th>What the range could not meet</th><th>Status</th></tr></thead>'
+    + '<tbody>'+rows+'</tbody></table>' + repFoot());
+}
+
+function openPrint(html){
+  const root = document.getElementById("printroot");
+  if(!root) return;
+  root.innerHTML = html;
+  window.print();
+}
+window.addEventListener("afterprint", ()=>{
+  const root = document.getElementById("printroot");
+  if(root) root.innerHTML = "";
+});
 
 /* ---------- start ---------- */
 (function init(){
