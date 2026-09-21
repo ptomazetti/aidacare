@@ -417,6 +417,48 @@ svg.chart text{font-family:var(--sans);fill:var(--ink-muted)}
 .cmp tr[data-diff="1"] td{background:color-mix(in srgb,var(--accent) 5%,transparent)}
 .cmp tr[data-diff="1"] td:first-child{background:color-mix(in srgb,var(--accent) 5%,var(--surface))}
 .cmp .best{font-weight:600}
+
+/* ---------- product photo ---------- */
+.thumb{
+  width:66px;height:66px;flex:none;border-radius:7px;object-fit:cover;
+  background:var(--surface-2);border:1px solid var(--line);
+}
+.thumb--empty{
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:13px;font-weight:600;color:var(--ink-muted);
+  border-style:dashed;
+}
+.cmp .thumb{width:54px;height:54px;margin-bottom:5px}
+
+/* ---------- accessories and what to say ---------- */
+.goeswith{display:flex;flex-wrap:wrap;gap:5px;align-items:center;font-size:11.5px}
+.goeswith__label{
+  font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-muted);width:100%;
+}
+.goeswith button{
+  border:1px solid var(--line);background:var(--surface-2);border-radius:13px;
+  padding:3px 9px;font-size:11.5px;cursor:pointer;color:var(--ink-2);text-align:left;
+}
+.goeswith button:hover{border-color:var(--accent);color:var(--accent)}
+.goeswith button b{font-weight:600;color:var(--ink)}
+details.say{border-top:1px solid var(--line);padding-top:9px}
+details.say summary{
+  cursor:pointer;font-size:12px;font-weight:600;color:var(--accent);list-style:none;
+}
+details.say summary::-webkit-details-marker{display:none}
+details.say summary::before{content:"+ ";font-family:var(--mono)}
+details.say[open] summary::before{content:"\2212 "}
+details.say p{font-size:12.5px;color:var(--ink-2);margin:8px 0 0}
+details.say p u{
+  text-decoration:none;display:block;color:var(--ink-muted);font-size:10px;
+  font-family:var(--mono);letter-spacing:.07em;text-transform:uppercase;margin-bottom:2px;
+}
+.reportform{border-top:1px solid var(--line);padding-top:9px;margin-top:2px}
+.reportform summary{cursor:pointer;font-size:12px;color:var(--ink-muted);list-style:none}
+.reportform summary::-webkit-details-marker{display:none}
+.reportform .formgrid{margin-top:9px;gap:8px}
+.photoup{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;margin-top:6px}
 </style>
 </head>
 <body>
@@ -449,6 +491,7 @@ svg.chart text{font-family:var(--sans);fill:var(--ink-muted)}
     <button class="tab" role="tab" data-view="compare" aria-selected="false">Compare<span class="tab__count" id="cntCmp">0</span></button>
     <button class="tab" role="tab" data-view="range" aria-selected="false">Full range</button>
     <button class="tab" role="tab" data-view="showroom" aria-selected="false">In the showroom</button>
+    <button class="tab" role="tab" data-view="gaps" aria-selected="false">Gaps &amp; reports<span class="tab__count" id="cntGaps">0</span></button>
     <button class="tab" role="tab" data-view="data" aria-selected="false">Catalogue</button>
   </nav>
 
@@ -457,6 +500,7 @@ svg.chart text{font-family:var(--sans);fill:var(--ink-muted)}
     <section id="view-compare" role="tabpanel" hidden></section>
     <section id="view-range" role="tabpanel" hidden></section>
     <section id="view-showroom" role="tabpanel" hidden></section>
+    <section id="view-gaps" role="tabpanel" hidden></section>
     <section id="view-data" role="tabpanel" hidden></section>
   </div>
 
@@ -515,110 +559,136 @@ const PRODUCTS = [
   {sku:"SMPL-MA-101",cat:"MA",family:"Seat Walkers",name:"Seat Walker Compact 4 Wheel",gbb:"Good",price:229,
    swl:100,weight:6.4,seatW:430,folds:true,env:"Indoor",propel:"n/a",support:"Hands",risk:null,
    need:"Short indoor distances with a rest seat",diff:"Narrow frame, lightest fold",value:"Fits narrow hallways and a small car boot",
-   limits:"Small wheels are not suited to gravel, grass or high kerbs",req:"Required"},
+   limits:"Small wheels are not suited to gravel, grass or high kerbs",req:"Required",overallWidth:560,handleMin:780,handleMax:940,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[],
+   objection:"It is the lightest fold in the range, so it is the one a client can manage alone. If they never lift it, the steel model gives a bigger seat for less.",competitor:"Sits against entry level compact walkers. Wins on fold size, loses on wheel size."},
   {sku:"SMPL-MA-102",cat:"MA",family:"Seat Walkers",name:"Seat Walker 4 Wheel Steel",gbb:"Better",price:319,
    swl:135,weight:9.8,seatW:460,folds:true,env:"Both",propel:"n/a",support:"Hands",risk:null,
    need:"Daily indoor and outdoor use",diff:"Larger wheels, higher weight capacity",value:"Handles footpaths and kerbs",
-   limits:"Heavier to lift into a car than the alloy model",req:"Required"},
+   limits:"Heavier to lift into a car than the alloy model",req:"Required",overallWidth:620,handleMin:810,handleMax:970,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[{sku:"SMPL-MA-301",why:"a backup for short trips where the walker is too much"}],
+   objection:"The extra over the compact buys larger wheels and a higher load rating, which is what makes footpaths and kerbs possible.",competitor:"Competes with mid tier steel seat walkers on price parity. Wins on load rating."},
   {sku:"SMPL-MA-103",cat:"MA",family:"Seat Walkers",name:"Seat Walker 4 Wheel Alloy",gbb:"Best",price:479,
    swl:135,weight:7.1,seatW:460,folds:true,env:"Both",propel:"n/a",support:"Hands",risk:null,
    need:"Active user outdoors who lifts the walker often",diff:"Alloy frame, lowest weight at full capacity",value:"Can be lifted into a car unaided",
-   limits:"Higher price than the steel model for the same seat width",req:"Required"},
+   limits:"Higher price than the steel model for the same seat width",req:"Required",overallWidth:620,handleMin:810,handleMax:970,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[{sku:"SMPL-MA-301",why:"a backup for short trips where the walker is too much"}],
+   objection:"Same seat and same load rating as the steel model, 2.7 kg lighter. The client is paying for the lift, not the seat.",competitor:"Competes with lightweight alloy seat walkers. Matches on weight, and the seat is wider than most."},
   {sku:"SMPL-MA-104",cat:"MA",family:"Seat Walkers",name:"Bariatric Seat Walker",gbb:"Best",price:869,
    swl:230,weight:14.6,seatW:560,folds:true,env:"Both",propel:"n/a",support:"Hands",risk:null,
    need:"Higher safe working load and a wider seat",diff:"Reinforced frame, widened seat and handgrip span",value:"Supports users a standard walker cannot carry",
-   limits:"Too heavy for most users to lift into a car unaided",req:"Required"},
+   limits:"Too heavy for most users to lift into a car unaided",req:"Required",overallWidth:720,handleMin:850,handleMax:1010,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[],
+   objection:"There is no cheaper way to support 230 kg safely. A standard walker used above its rating is a failure waiting to happen.",competitor:"Few competitors range a bariatric seat walker at all, so availability is usually the deciding factor."},
   {sku:"SMPL-MA-201",cat:"MA",family:"Walking Frames",name:"Walking Frame 2 Wheel",gbb:"Good",price:119,
    swl:135,weight:2.9,seatW:null,folds:true,env:"Indoor",propel:"n/a",support:"Hands",risk:null,
    need:"Indoor support with high stability",diff:"Front wheels only, rear stoppers",value:"Stable and simple to use",
-   limits:"No seat, so it does not suit a user who needs to rest",req:"Required"},
+   limits:"No seat, so it does not suit a user who needs to rest",req:"Required",overallWidth:600,handleMin:760,handleMax:900,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[],
+   objection:"It is the most stable option in the range. If the client needs to sit down on the way, they need a seat walker instead.",competitor:"Commodity product. Price parity across the market, so service and availability decide it."},
   {sku:"SMPL-MA-202",cat:"MA",family:"Walking Frames",name:"Forearm Support Walker",gbb:"Best",price:729,
    swl:135,weight:13.2,seatW:null,folds:true,env:"Both",propel:"n/a",support:"Forearms",risk:null,
    need:"Cannot bear weight through the wrists or hands",diff:"Forearm platforms with adjustable angle and height",value:"Keeps a user walking when a standard frame cannot",
-   limits:"Bulky to transport and needs a setup appointment",req:"Required"},
+   limits:"Bulky to transport and needs a setup appointment",req:"Required",overallWidth:640,handleMin:900,handleMax:1200,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[],
+   objection:"It is the only product in the range that works when the wrists cannot take load. There is no cheaper equivalent, because nothing else does the job.",competitor:"Specialist product with few direct competitors. Setup support is the differentiator."},
   {sku:"SMPL-MA-301",cat:"MA",family:"Walking Canes",name:"Walking Cane Folding",gbb:"Good",price:39,
    swl:100,weight:0.4,seatW:null,folds:true,env:"Both",propel:"n/a",support:"Hands",risk:null,
    need:"Occasional light support that packs away",diff:"Four section fold",value:"Fits a handbag, so it is always with the user",
-   limits:"Light support only, not for a user at risk of falls",req:"Required"},
+   limits:"Light support only, not for a user at risk of falls",req:"Required",overallWidth:null,handleMin:810,handleMax:940,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[],
+   objection:"It folds into a bag, which is the whole point. If the client uses a cane every day, the adjustable model sets to their height properly.",competitor:"Heavily discounted category. Compete on fit and advice, not on price."},
   {sku:"SMPL-MA-302",cat:"MA",family:"Walking Canes",name:"Walking Cane Adjustable",gbb:"Better",price:59,
    swl:120,weight:0.5,seatW:null,folds:false,env:"Both",propel:"n/a",support:"Hands",risk:null,
    need:"Everyday support set to the correct height",diff:"Wide height range and moulded grip",value:"Set to the user rather than close enough",
-   limits:"Does not fold, so it does not stow in a bag",req:"Required"},
+   limits:"Does not fold, so it does not stow in a bag",req:"Required",overallWidth:null,handleMin:730,handleMax:990,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[],
+   objection:"A cane set to the wrong height loads the shoulder. The adjustment range is what you are paying the extra for.",competitor:"Price parity with most adjustable canes. Wins on height range."},
   {sku:"SMPL-MA-303",cat:"MA",family:"Walking Canes",name:"Quad Cane Small Base",gbb:"Better",price:69,
    swl:120,weight:1.1,seatW:null,folds:false,env:"Indoor",propel:"n/a",support:"Hands",risk:null,
    need:"Needs a cane that stands unaided",diff:"Four point base",value:"Stays upright, so transfers are more confident",
-   limits:"The base catches on uneven ground outdoors",req:"Optional"},
+   limits:"The base catches on uneven ground outdoors",req:"Optional",overallWidth:null,handleMin:760,handleMax:940,funding:["Aged Care Package","Private"],image:null,accessories:[],
+   objection:"It stands up on its own, so the client is not bending to pick it up during a transfer.",competitor:"Common across the market. Base size is the practical difference."},
 
   {sku:"SMPL-MW-101",cat:"MW",family:"Transit",name:"Transit Wheelchair 18in",gbb:"Good",price:349,
    swl:115,weight:13.4,seatW:455,folds:true,env:"Both",propel:"Attendant",support:"Seated",risk:null,
    need:"Pushed by a carer for occasional outings",diff:"Steel frame, fixed arms and footplates",value:"Lowest entry point for carer pushed use",
-   limits:"The user cannot self propel, and the frame is heavy to load",req:"Required"},
+   limits:"The user cannot self propel, and the frame is heavy to load",req:"Required",overallWidth:610,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[{sku:"SMPL-CU-101",why:"low pressure risk"},{sku:"SMPL-CU-102",why:"moderate pressure risk"},{sku:"SMPL-CU-103",why:"high pressure risk"}],
+   objection:"It is the lowest cost way to get the client out of the house. If the carer loads it often, the alloy model saves 4.2 kg every time.",competitor:"Entry transit chairs are a price fight. Lead on the cushion and the setup, not the chair."},
   {sku:"SMPL-MW-102",cat:"MW",family:"Transit",name:"Transit Lightweight Alloy",gbb:"Better",price:589,
    swl:115,weight:9.2,seatW:455,folds:true,env:"Both",propel:"Attendant",support:"Seated",risk:null,
    need:"A carer loads the chair into a car regularly",diff:"Alloy frame with quick release parts",value:"A carer can load it without help",
-   limits:"Still attendant propelled only",req:"Required"},
+   limits:"Still attendant propelled only",req:"Required",overallWidth:610,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[{sku:"SMPL-CU-101",why:"low pressure risk"},{sku:"SMPL-CU-102",why:"moderate pressure risk"},{sku:"SMPL-CU-103",why:"high pressure risk"}],
+   objection:"The difference is 4.2 kg in the carer's hands, every trip. Ask how often they load it before quoting the steel one.",competitor:"Matches most lightweight transit chairs on weight. Quick release parts are the practical edge."},
   {sku:"SMPL-MW-201",cat:"MW",family:"Self Propel",name:"Self Propel Steel 18in",gbb:"Good",price:449,
    swl:115,weight:16.8,seatW:455,folds:true,env:"Indoor",propel:"Self",support:"Seated",risk:null,
    need:"User propels indoors over limited distance",diff:"Steel frame, standard rims",value:"Independence at the lowest cost",
-   limits:"Heavy to push over distance and hard to load into a car",req:"Required"},
+   limits:"Heavy to push over distance and hard to load into a car",req:"Required",overallWidth:620,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[{sku:"SMPL-CU-101",why:"low pressure risk"},{sku:"SMPL-CU-102",why:"moderate pressure risk"},{sku:"SMPL-CU-103",why:"high pressure risk"}],
+   objection:"It is independence at the lowest price. Over distance the client will feel every kilo of the steel frame.",competitor:"Commodity self propel. Availability and cushion pairing decide it."},
   {sku:"SMPL-MW-202",cat:"MW",family:"Self Propel",name:"Self Propel Lightweight Alloy",gbb:"Better",price:749,
    swl:125,weight:11.6,seatW:455,folds:true,env:"Both",propel:"Self",support:"Seated",risk:null,
    need:"Daily independent use, transported often",diff:"Alloy frame with adjustable rear axle",value:"Easier push and easier transport",
-   limits:"Seat depth and back angle are not adjustable",req:"Required"},
+   limits:"Seat depth and back angle are not adjustable",req:"Required",overallWidth:620,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[{sku:"SMPL-CU-101",why:"low pressure risk"},{sku:"SMPL-CU-102",why:"moderate pressure risk"},{sku:"SMPL-CU-103",why:"high pressure risk"}],
+   objection:"5.2 kg lighter to push and to load than the steel chair, and the axle adjusts. For daily use that is the difference between using it and not.",competitor:"Sits against mid tier alloy self propel chairs. Axle adjustment is the point of difference."},
   {sku:"SMPL-MW-203",cat:"MW",family:"Self Propel",name:"Self Propel Premium Folding",gbb:"Best",price:1290,
    swl:125,weight:10.4,seatW:455,folds:true,env:"Both",propel:"Self",support:"Seated",risk:null,
    need:"Full time user whose seating is set to the person",diff:"Adjustable seat depth, backrest angle and axle position",value:"Configured to the user rather than a fixed seat",
-   limits:"Needs a setup appointment, and lead time is longer",req:"Required"},
+   limits:"Needs a setup appointment, and lead time is longer",req:"Required",overallWidth:620,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[{sku:"SMPL-CU-101",why:"low pressure risk"},{sku:"SMPL-CU-102",why:"moderate pressure risk"},{sku:"SMPL-CU-103",why:"high pressure risk"}],
+   objection:"Seat depth, back angle and axle all adjust, so the chair is set to the client rather than the client adapting to the chair. For a full time user that is posture and skin, not comfort.",competitor:"Competes with configurable folding chairs. Lead time is the usual objection, not price."},
   {sku:"SMPL-MW-301",cat:"MW",family:"Bariatric",name:"Bariatric Self Propel 24in",gbb:"Best",price:1450,
    swl:230,weight:22.5,seatW:610,folds:true,env:"Both",propel:"Self",support:"Seated",risk:null,
    need:"Higher safe working load and a wider seat",diff:"Reinforced frame and widened seat",value:"Suits users a standard chair cannot carry",
-   limits:"Will not pass through a narrow doorway, and it is heavy to load",req:"Required"},
+   limits:"Will not pass through a narrow doorway, and it is heavy to load",req:"Required",overallWidth:790,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[{sku:"SMPL-CU-104",why:"matched 610 mm width and load rating"}],
+   objection:"Nothing else in the range carries 230 kg. Check the doorway before quoting, because at 790 mm it will not pass a standard internal door.",competitor:"Limited competition at this width. Doorway access is the usual reason a sale fails."},
 
   {sku:"SMPL-CU-101",cat:"CU",family:"Pressure Care",name:"Foam Contour Cushion",gbb:"Good",price:129,
-   swl:120,weight:0.9,seatW:430,folds:false,env:"Both",propel:"n/a",support:"Seated",risk:"Low",
+   swl:120,weight:0.9,seatW:455,folds:false,env:"Both",propel:"n/a",support:"Seated",risk:"Low",
    need:"Low pressure injury risk with comfort seating",diff:"Contoured high resilience foam",value:"Everyday comfort and basic offloading",
-   limits:"Not suitable where skin integrity is already at risk",req:"Required"},
+   limits:"Not suitable where skin integrity is already at risk",req:"Required",overallWidth:null,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[],
+   objection:"It is a comfort and basic offloading cushion. If skin integrity is already a concern, it is the wrong product at any price.",competitor:"Price parity across foam cushions. Contour shape is the difference."},
   {sku:"SMPL-CU-102",cat:"CU",family:"Pressure Care",name:"Gel and Foam Hybrid Cushion",gbb:"Better",price:289,
    swl:140,weight:1.8,seatW:455,folds:false,env:"Both",propel:"n/a",support:"Seated",risk:"Moderate",
    need:"Moderate risk, seated for longer periods",diff:"Gel insert over contoured foam",value:"Redistributes pressure without an air pump",
-   limits:"Heavier than foam, and the gel layer holds warmth",req:"Required"},
+   limits:"Heavier than foam, and the gel layer holds warmth",req:"Required",overallWidth:null,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[],
+   objection:"Gel redistribution without a pump to check or a cell to puncture. For moderate risk it is the lowest maintenance option that still works.",competitor:"Competes with gel and hybrid cushions across the market. Wins on maintenance, loses on weight."},
   {sku:"SMPL-CU-103",cat:"CU",family:"Pressure Care",name:"Air Cell Cushion",gbb:"Best",price:640,
    swl:150,weight:1.2,seatW:455,folds:false,env:"Both",propel:"n/a",support:"Seated",risk:"High",
    need:"High pressure injury risk, full time sitting",diff:"Adjustable air cells, immersion set to the user",value:"Highest offloading where skin integrity is at risk",
-   limits:"Needs checking and reinflating, and it can be punctured",req:"Required"},
+   limits:"Needs checking and reinflating, and it can be punctured",req:"Required",overallWidth:null,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[],
+   objection:"For a full time sitter at high risk, the cost of the cushion is small against the cost of a pressure injury. It does need checking and reinflating.",competitor:"Sits against adjustable air cell cushions. Immersion adjustment is the clinical argument."},
   {sku:"SMPL-CU-104",cat:"CU",family:"Pressure Care",name:"Bariatric Foam Cushion",gbb:"Better",price:239,
    swl:250,weight:2.4,seatW:610,folds:false,env:"Both",propel:"n/a",support:"Seated",risk:"Low",
    need:"Higher safe working load with a wider seat",diff:"High density foam across a wider base",value:"Supports a heavier user on a wider chair",
-   limits:"Low risk offloading only, despite the higher capacity",req:"Required"},
+   limits:"Low risk offloading only, despite the higher capacity",req:"Required",overallWidth:null,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[],
+   objection:"It carries the load and the width, but it is still a low risk offloading cushion. Do not sell it as pressure care for a high risk client.",competitor:"Few bariatric cushions are ranged at this width. Availability usually decides it."},
   {sku:"SMPL-CU-201",cat:"CU",family:"Comfort",name:"Wedge Cushion",gbb:"Good",price:79,
    swl:110,weight:0.6,seatW:400,folds:false,env:"Indoor",propel:"n/a",support:"Seated",risk:"Low",
    need:"Posture support when sitting",diff:"Angled foam wedge",value:"Improves sitting posture in an existing chair",
-   limits:"Comfort product, not a pressure care cushion",req:"Optional"},
+   limits:"Comfort product, not a pressure care cushion",req:"Optional",overallWidth:null,handleMin:null,handleMax:null,funding:["Private"],image:null,accessories:[],
+   objection:"It is a posture product for an existing chair, not pressure care. Say so plainly.",competitor:"Widely available and heavily discounted online."},
   {sku:"SMPL-CU-202",cat:"CU",family:"Comfort",name:"Ring Cushion",gbb:"Good",price:49,
    swl:110,weight:0.4,seatW:400,folds:false,env:"Indoor",propel:"n/a",support:"Seated",risk:"Low",
    need:"Localised comfort after surgery",diff:"Open centre design",value:"Relieves a specific contact point",
-   limits:"Can increase pressure around the opening if used long term",req:"Optional"},
+   limits:"Can increase pressure around the opening if used long term",req:"Optional",overallWidth:null,handleMin:null,handleMax:null,funding:["Private"],image:null,accessories:[],
+   objection:"It relieves one contact point after surgery. It is not a long term seating solution and can make pressure worse around the opening.",competitor:"Commodity. Advice is the only differentiator."},
 
   {sku:"SMPL-BD-101",cat:"BD",family:"Bed Accessories",name:"Bed Stick",gbb:"Good",price:89,
    swl:100,weight:1.6,seatW:null,folds:false,env:"Indoor",propel:"n/a",support:"Hands",risk:null,
    need:"Help to sit up and get out of bed",diff:"Single pole with a mattress strap fixing",value:"Simple bed transfer support",
-   limits:"Not suitable where there is any entrapment risk",req:"Required"},
+   limits:"Not suitable where there is any entrapment risk",req:"Required",overallWidth:null,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[{sku:"SMPL-BD-201",why:"eating and activity once they are sitting up"}],
+   objection:"It is the simplest thing that gets the client out of bed. If they need the grip at a set height, the lever adjusts and this does not.",competitor:"Commodity product. Entrapment assessment is where you add value."},
   {sku:"SMPL-BD-102",cat:"BD",family:"Bed Accessories",name:"Bed Lever Adjustable",gbb:"Better",price:159,
    swl:120,weight:3.1,seatW:null,folds:false,env:"Indoor",propel:"n/a",support:"Hands",risk:null,
    need:"Needs a set grip height and position",diff:"Adjustable height with a swing away arm",value:"Set to the user and moves out of the way",
-   limits:"Needs a compatible bed frame",req:"Required"},
+   limits:"Needs a compatible bed frame",req:"Required",overallWidth:null,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[{sku:"SMPL-BD-201",why:"eating and activity once they are sitting up"}],
+   objection:"It sets to the client's grip height and swings out of the way for transfers. A fixed stick does neither.",competitor:"Sits against adjustable bed levers. Bed frame compatibility is the usual blocker."},
   {sku:"SMPL-BD-103",cat:"BD",family:"Bed Accessories",name:"Bed Rail Full Length",gbb:"Best",price:319,
    swl:140,weight:6.8,seatW:null,folds:false,env:"Indoor",propel:"n/a",support:"Hands",risk:null,
    need:"Continuous support along the bed edge",diff:"Full length rail with a wider fitting range",value:"Support along the whole transfer path",
-   limits:"Entrapment risk must be assessed against the mattress and frame",req:"Required"},
+   limits:"Entrapment risk must be assessed against the mattress and frame",req:"Required",overallWidth:null,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[{sku:"SMPL-BD-201",why:"eating and activity once they are sitting up"}],
+   objection:"Support along the whole transfer path rather than one grip point. Entrapment must be assessed against the mattress and frame first.",competitor:"Competes with full length rails. Fitting range is the practical difference."},
   {sku:"SMPL-BD-201",cat:"BD",family:"Bed Furniture",name:"Overbed Table",gbb:"Good",price:189,
    swl:25,weight:9.4,seatW:null,folds:false,env:"Indoor",propel:"n/a",support:"n/a",risk:null,
    need:"Eating and activity while in bed",diff:"Height adjustable top on castors",value:"Brings the surface to the user",
-   limits:"The stated load is for the table top, not for body weight",req:"Required"},
+   limits:"The stated load is for the table top, not for body weight",req:"Required",overallWidth:null,handleMin:null,handleMax:null,funding:["NDIS","DVA","Aged Care Package","Private"],image:null,accessories:[],
+   objection:"The stated load is for the table top. It is not something to lean on getting out of bed.",competitor:"Commodity. Castor quality and height range are the difference."},
   {sku:"SMPL-BD-202",cat:"BD",family:"Bed Furniture",name:"Bedside Cabinet",gbb:"Better",price:249,
    swl:20,weight:12.2,seatW:null,folds:false,env:"Indoor",propel:"n/a",support:"n/a",risk:null,
    need:"Storage within reach of the bed",diff:"Lockable drawer on castors",value:"Keeps essentials reachable and secure",
-   limits:"Not a transfer support and must not be leant on",req:"Optional"}
+   limits:"Not a transfer support and must not be leant on",req:"Optional",overallWidth:null,handleMin:null,handleMax:null,funding:["Private"],image:null,accessories:[],
+   objection:"It is storage on castors with a lockable drawer. It is not a transfer support and must never be leant on.",competitor:"Furniture category. Finish and lock quality decide it."}
 ];
 const PBYSKU = Object.fromEntries(PRODUCTS.map(p=>[p.sku,p]));
 
@@ -649,9 +719,11 @@ function buildAvailability(){
 }
 
 /* ---------- what the client needs ---------- */
+const FUNDING = ["NDIS","DVA","Aged Care Package","Private"];
 const BLANK_NEED = {
-  cat:"ALL", userWeight:"", seatWidth:"", env:"Any", transport:"Any",
-  propel:"Any", wrists:"Any", risk:"Any", budget:"", notes:""
+  cat:"ALL", userWeight:"", seatWidth:"", doorway:"", handleHeight:"",
+  env:"Any", transport:"Any", propel:"Any", wrists:"Any", risk:"Any",
+  funding:"Any", budget:"", notes:""
 };
 
 const CRITERIA = [
@@ -680,6 +752,21 @@ const CRITERIA = [
     applies:p => p.support === "Hands" || p.support === "Forearms",
     test:p => p.support === "Forearms",
     say:p => p.support === "Forearms" ? "takes weight through the forearms" : "loads the hands and wrists" },
+  { id:"doorway", hard:true, label:"Doorway width",
+    active:n => +n.doorway > 0,
+    applies:p => p.overallWidth != null,
+    test:(p,n) => p.overallWidth <= +n.doorway,
+    say:(p,n) => p.overallWidth + " mm overall, doorway is " + n.doorway + " mm" },
+  { id:"handle", hard:true, label:"Handle height",
+    active:n => +n.handleHeight > 0,
+    applies:p => p.handleMin != null,
+    test:(p,n) => +n.handleHeight >= p.handleMin && +n.handleHeight <= p.handleMax,
+    say:(p,n) => "adjusts " + p.handleMin + " to " + p.handleMax + " mm, client needs " + n.handleHeight + " mm" },
+  { id:"funding", hard:true, label:"Funding scheme",
+    active:n => n.funding !== "Any",
+    applies:p => Array.isArray(p.funding) && p.funding.length > 0,
+    test:(p,n) => p.funding.indexOf(n.funding) !== -1,
+    say:(p,n) => p.funding.indexOf(n.funding) !== -1 ? "can be supplied under " + n.funding : "not supplied under " + n.funding },
   { id:"env", hard:false, label:"Where it will be used",
     active:n => n.env !== "Any",
     applies:p => p.env !== "n/a",
@@ -730,8 +817,31 @@ function assess(need){
   return list;
 }
 
-/* Which requirements nothing in the range can meet. This is the part that
-   answers "what we do not have", rather than quietly returning a short list. */
+/* What the range cannot do for this client. Two different gaps, and the
+   second is the one that is easy to miss: every requirement has some
+   product that meets it, but no single product meets them together. A
+   185 kg client through a 760 mm doorway is exactly that case. */
+function gapReport(need, results){
+  const active = CRITERIA.filter(c=>c.active(need));
+  const impossible = gaps(need, results);
+  const full = results.filter(r=>r.fit === "full");
+  const nearest = results.filter(r=>r.fit !== "full")
+    .slice()
+    .sort((a,b)=>(a.hardMiss + a.softMiss) - (b.hardMiss + b.softMiss) || a.product.price - b.product.price)
+    .slice(0,3)
+    .map(r=>({
+      product:r.product,
+      missed:r.checks.filter(c=>c.r === "no").map(c=>c.label + ", " + c.detail)
+    }));
+  return {
+    impossible,
+    combination: active.length > 0 && full.length === 0 && impossible.length === 0,
+    nearest,
+    activeCount: active.length,
+    any: impossible.length > 0 || (active.length > 0 && full.length === 0)
+  };
+}
+
 function gaps(need, results){
   const out = [];
   CRITERIA.forEach(c=>{
@@ -746,6 +856,8 @@ function gaps(need, results){
         if(c.id === "risk") return RISK[b.product.risk] - RISK[a.product.risk];
         if(c.id === "budget") return a.product.price - b.product.price;
         if(c.id === "lift") return a.product.weight - b.product.weight;
+        if(c.id === "doorway") return a.product.overallWidth - b.product.overallWidth;
+        if(c.id === "handle") return Math.abs(a.product.handleMin - +need.handleHeight) - Math.abs(b.product.handleMin - +need.handleHeight);
         return 0;
       })[0];
       out.push({ label:c.label, hard:c.hard, nearest:best ? best.product : null, detail:best ? c.say(best.product, need) : "" });
@@ -802,6 +914,9 @@ function needsForm(){
     + sel("n_showroom","Checking stock at", SHOWROOMS.map(s=>({v:s.id,l:s.name+" ("+s.profile+")"})), STATE.showroom)
     + num("n_weight","Client weight (kg)", n.userWeight, "e.g. 140")
     + num("n_seatWidth","Seat width needed (mm)", n.seatWidth, "e.g. 500")
+    + num("n_doorway","Narrowest doorway (mm)", n.doorway, "e.g. 760")
+    + num("n_handleHeight","Handle height needed (mm)", n.handleHeight, "measure to the wrist crease")
+    + sel("n_funding","Funding scheme", [{v:"Any",l:"Not a deciding factor"}].concat(FUNDING.map(f=>({v:f,l:f}))), n.funding)
     + sel("n_env","Where it will be used", [{v:"Any",l:"Not a deciding factor"},{v:"Indoor",l:"Indoors"},{v:"Outdoor",l:"Outdoors"},{v:"Both",l:"Indoors and outdoors"}], n.env)
     + sel("n_transport","Transport", [{v:"Any",l:"Not a deciding factor"},{v:"Fold",l:"Must fold to fit in a car"},{v:"Lift",l:"Must be lifted in unaided"}], n.transport)
     + sel("n_propel","Who propels the chair", [{v:"Any",l:"Not a wheelchair, or not decided"},{v:"Self",l:"The client propels"},{v:"Attendant",l:"A carer pushes"}], n.propel)
@@ -819,7 +934,8 @@ function renderMatch(){
   const active = CRITERIA.filter(c=>c.active(n));
   const full = results.filter(r=>r.fit==="full");
   const partial = results.filter(r=>r.fit==="partial");
-  const missing = gaps(n, results);
+  const report = gapReport(n, results);
+  const missing = report.impossible;
 
   let summary;
   if(!active.length){
@@ -836,23 +952,37 @@ function renderMatch(){
   }
 
   let gapHtml = "";
-  if(missing.length){
+  if(report.any){
+    const lead = missing.length
+      ? '<p>Every product in scope fails on the requirements below. This is a range gap, not a selection problem.</p><ul>'
+        + missing.map(m=>'<li><strong>'+esc(m.label)+'</strong>'
+            + (m.nearest ? ', closest is '+esc(m.nearest.name)+', '+esc(m.detail) : '')
+            + (m.hard ? '' : ' (preference, not suitability)') + '</li>').join("")
+        + '</ul>'
+      : '<p>Each requirement on its own has a product that meets it, but <strong>no single product meets all '
+        + report.activeCount + ' together</strong>. That combination is the gap.</p>';
+    const near = report.nearest.length
+      ? '<p style="margin-top:4px"><strong>Closest in the range</strong></p><ul>'
+        + report.nearest.map(x=>'<li>'+esc(x.product.name)+' ('+money(x.product.price)+')'
+            + (x.missed.length ? ', falls short on '+esc(x.missed.join("; ")) : '') + '</li>').join("")
+        + '</ul>'
+      : '';
     gapHtml = '<div class="gap"><h3>What the range does not cover for this client</h3>'
-      + '<p>Every product in scope fails on the requirements below. This is a range gap, not a selection problem, and it is worth recording.</p><ul>'
-      + missing.map(m=>'<li><strong>'+esc(m.label)+'</strong>'
-          + (m.nearest ? ' &mdash; closest is '+esc(m.nearest.name)+', '+esc(m.detail) : '')
-          + (m.hard ? '' : ' (preference, not suitability)') + '</li>').join("")
-      + '</ul><p>Tell the client plainly what the range does not do, offer the closest product with its limitation stated, and pass the gap to Category Management with the client requirement written down.</p></div>';
+      + lead + near
+      + '<p>Tell the client plainly what the range does not do, offer the closest product with its limitation stated, and log the gap so it counts towards a range decision.</p>'
+      + '<div class="btnrow"><button class="btn" id="logGapBtn" type="button">Log this gap</button></div>'
+      + '<p class="hint" id="gapSaveNote">' + esc(sharedWhere()) + '</p></div>';
   }
 
   const cards = results.map(r=>{
-    const p = r.product, a = av(p.sku);
+    const p = r.product, a = av(p.sku), acc = accessoriesFor(p);
     const checks = r.checks.filter(c=>c.r !== "na");
     const fitLabel = r.fit === "full" ? "Meets every requirement"
       : r.fit === "partial" ? "Short on "+r.softMiss+" preference"+(r.softMiss===1?"":"s")
       : "Not suitable: "+r.hardMiss+" requirement"+(r.hardMiss===1?"":"s")+" not met";
     return '<article class="card" data-fit="'+r.fit+'">'
       + '<div class="card__top">'
+      +   thumb(p)
       +   '<h3 class="card__name">'+esc(p.name)+'<span class="sku">'+esc(p.sku)+' &middot; '+esc(CATNAME[p.cat])+'</span></h3>'
       +   '<span class="fit fit--'+r.fit+'">'+esc(fitLabel)+'</span>'
       + '</div>'
@@ -872,6 +1002,27 @@ function renderMatch(){
       + (checks.length
           ? '<ul class="card__checks">'+checks.map(c=>'<li data-r="'+c.r+'"><i>'+(c.r==="yes"?"✓":"✕")+'</i><span>'+esc(c.label)+': '+esc(c.detail)+'</span></li>').join("")+'</ul>'
           : '<p class="card__why"><b>Limitation:</b> '+esc(p.limits)+'</p>')
+      + (acc.length
+          ? '<div class="goeswith"><span class="goeswith__label">Usually goes with</span>'
+            + acc.map(a=>'<button type="button" data-addacc="'+esc(a.product.sku)+'"><b>'+esc(a.product.name)+'</b> for '+esc(a.why)+'</button>').join("")
+            + '</div>'
+          : '')
+      + '<details class="say"><summary>What to say</summary>'
+      +   '<p><u>If they ask why this one costs more</u>'+esc(p.objection)+'</p>'
+      +   '<p><u>Against the competition</u>'+esc(p.competitor)+'</p>'
+      +   '<p><u>Limitation to state</u>'+esc(p.limits)+'</p>'
+      + '</details>'
+      + '<details class="reportform"><summary>Report a specification that looks wrong</summary>'
+      +   '<div class="formgrid">'
+      +     '<label class="field"><span class="field__label">Field</span><select data-rfield="'+esc(p.sku)+'">'
+      +       ["Safe working load","Seat width","Overall width","Handle height","Product weight","Price","Funding scheme","Pressure risk rating","Other"].map(f=>'<option>'+f+'</option>').join("")
+      +     '</select></label>'
+      +     '<label class="field"><span class="field__label">What it should be</span><input type="text" data-rvalue="'+esc(p.sku)+'" placeholder="The value you have seen"></label>'
+      +     '<label class="field needs__span"><span class="field__label">Where you saw it</span><input type="text" data-rnote="'+esc(p.sku)+'" placeholder="Label on the product, current manual, supplier sheet"></label>'
+      +   '</div>'
+      +   '<div class="btnrow"><button class="btn btn--ghost" data-report="'+esc(p.sku)+'" type="button">Send report</button>'
+      +     '<span class="hint" data-rhint="'+esc(p.sku)+'"></span></div>'
+      + '</details>'
       + '<div class="card__foot">'
       +   '<span class="card__price">'+money(p.price)+'</span>'
       +   '<label class="pick"><input type="checkbox" data-pick="'+esc(p.sku)+'"'+(STATE.tray.includes(p.sku)?" checked":"")+'> Compare</label>'
@@ -906,7 +1057,16 @@ function renderCompare(){
     { label:"Propulsion", get:p=>p.propel==="n/a"?"Not applicable":esc(p.propel), raw:p=>p.propel },
     { label:"Takes weight through", get:p=>p.support==="n/a"?"Not applicable":esc(p.support), raw:p=>p.support },
     { label:"Pressure risk rating", get:p=>p.risk?esc(p.risk):"Not a pressure care product", raw:p=>p.risk },
+    { label:"Overall width", get:p=>p.overallWidth ? p.overallWidth+" mm" : "Not applicable", raw:p=>p.overallWidth },
+    { label:"Handle height range", get:p=>p.handleMin ? p.handleMin+" to "+p.handleMax+" mm" : "Not applicable", raw:p=>p.handleMin },
+    { label:"Funding schemes", get:p=>esc((p.funding||[]).join(", ")), raw:p=>(p.funding||[]).join(", ") },
+    { label:"Usually goes with", get:p=>{
+        const a = accessoriesFor(p);
+        return a.length ? a.map(x=>esc(x.product.name)+' <span class="sku" style="display:inline">for '+esc(x.why)+'</span>').join("<br>") : "Nothing paired";
+      }, raw:p=>(p.accessories||[]).map(a=>a.sku).join(",") },
     { label:"Limitation to state", get:p=>esc(p.limits), raw:p=>p.limits },
+    { label:"If they ask why it costs more", get:p=>esc(p.objection), raw:p=>p.objection },
+    { label:"Against the competition", get:p=>esc(p.competitor), raw:p=>p.competitor },
     { label:"On display here", get:p=>av(p.sku).displayed?"Yes":"No", raw:p=>av(p.sku).displayed },
     { label:"Demonstration ready", get:p=>av(p.sku).demoReady?"Yes":"No", raw:p=>av(p.sku).demoReady },
     { label:"Stock", get:p=>esc(av(p.sku).stock), raw:p=>av(p.sku).stock },
@@ -933,7 +1093,7 @@ function renderCompare(){
     + '<span class="chip">'+items.length+' selected</span></div>'
     + '<p class="panel__note panel__note--tight">Rows that differ between these products are shaded, so the real choice is visible without reading every line. Limitations are shown, not left out.</p>'
     + '<div class="tablewrap"><table class="cmp"><thead><tr><th>Attribute</th>'
-    + items.map(p=>'<th>'+esc(p.name)+'<span class="sku">'+esc(p.sku)+'</span></th>').join("")
+    + items.map(p=>'<th>'+thumb(p)+'<br>'+esc(p.name)+'<span class="sku">'+esc(p.sku)+'</span></th>').join("")
     + '</tr></thead><tbody>'+body+'</tbody></table></div></div>';
 }
 
@@ -948,13 +1108,14 @@ function renderRange(){
         if(!list.length) return '<td><span style="color:var(--ink-muted)">No product in this position</span></td>';
         return '<td>'+list.map(p=>{
           const a = av(p.sku);
-          return '<div style="margin-bottom:9px">'
+          return '<div style="margin-bottom:9px;display:flex;gap:9px;align-items:flex-start">'
+            + thumb(p) + '<div style="min-width:0">'
             + '<strong>'+esc(p.name)+'</strong> <span class="sku">'+esc(p.sku)+' &middot; '+money(p.price)+'</span>'
             + '<div style="font-size:12px;color:var(--ink-2);margin-top:3px">'+esc(p.value)+'</div>'
             + '<div style="margin-top:5px;display:flex;gap:5px;flex-wrap:wrap">'
             +   '<span class="chip '+(a.displayed?"chip--ok":"chip--crit")+'"><span class="chip__dot"></span>'+(a.displayed?"Displayed":"Not displayed")+'</span>'
             +   '<label class="pick"><input type="checkbox" data-pick="'+esc(p.sku)+'"'+(STATE.tray.includes(p.sku)?" checked":"")+'> Compare</label>'
-            + '</div></div>';
+            + '</div></div></div>';
         }).join("")+'</td>';
       }).join("");
       return '<tr><td><strong>'+esc(f)+'</strong></td>'+cells+'</tr>';
@@ -994,7 +1155,35 @@ function renderShowroom(){
 }
 
 /* ---------- catalogue ---------- */
-const CSV_HEADER = "sku,name,category,family,position,price,swl_kg,seat_width_mm,product_weight_kg,folds,environment,propulsion,support,pressure_risk,customer_need,functional_difference,customer_value,limitations,range_status";
+const CSV_COLS = ["sku","name","category","family","position","price","swl_kg","seat_width_mm",
+  "overall_width_mm","handle_min_mm","handle_max_mm","product_weight_kg","folds","environment",
+  "propulsion","support","pressure_risk","funding","customer_need","functional_difference",
+  "customer_value","limitations","objection","competitor","accessories","range_status"];
+const CSV_HEADER = CSV_COLS.join(",");
+
+/* A real CSV reader: product copy contains commas, so a naive split
+   would quietly shift every column after the first comma. */
+function parseCsv(text){
+  const rows = [];
+  let row = [], field = "", quoted = false, i = 0;
+  text = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  while(i < text.length){
+    const ch = text[i];
+    if(quoted){
+      if(ch === '"'){
+        if(text[i+1] === '"'){ field += '"'; i += 2; continue; }
+        quoted = false; i++; continue;
+      }
+      field += ch; i++; continue;
+    }
+    if(ch === '"'){ quoted = true; i++; continue; }
+    if(ch === ","){ row.push(field); field = ""; i++; continue; }
+    if(ch === "\n"){ row.push(field); rows.push(row); row = []; field = ""; i++; continue; }
+    field += ch; i++;
+  }
+  if(field.length || row.length){ row.push(field); rows.push(row); }
+  return rows.filter(r=>r.some(c=>c.trim() !== ""));
+}
 
 function renderData(){
   const m = STATE.meta;
@@ -1018,6 +1207,23 @@ function renderData(){
     +   '<button class="btn" id="importCsv" type="button">Load catalogue</button>'
     +   '<button class="btn btn--danger" id="resetSample" type="button">Restore sample specifications</button></div></div>'
 
+    + '<div class="panel"><div class="panel__head"><h2 class="panel__title">Product photos</h2>'
+    + '<span class="chip">'+PRODUCTS.filter(x=>imageFor(x)).length+' of '+PRODUCTS.length+' have a photo</span></div>'
+    + '<p class="panel__note panel__note--tight">'
+    + (SHARED.assets && SHARED.canEdit
+        ? 'Upload one photo per product. Everyone who can open this page sees them.'
+        : (SHARED.checked
+            ? 'Photo upload needs edit access on the published page. A photo can also be set through the image column when this page is hosted on your own server.'
+            : 'Checking whether photos can be uploaded.'))
+    + '</p>'
+    + '<div class="tablewrap"><table><thead><tr><th>Product</th><th>Photo</th><th></th></tr></thead><tbody>'
+    + PRODUCTS.map(pr=>'<tr><td>'+esc(pr.name)+'<span class="sku">'+esc(pr.sku)+'</span></td>'
+        + '<td>'+thumb(pr)+'</td>'
+        + '<td>' + (SHARED.assets && SHARED.canEdit
+            ? '<input type="file" accept="image/*" data-photo="'+esc(pr.sku)+'"><span class="hint" data-phint="'+esc(pr.sku)+'"></span>'
+            : '<span style="color:var(--ink-muted)">'+(imageFor(pr) ? "Set" : "No photo")+'</span>') + '</td></tr>').join("")
+    + '</tbody></table></div></div>'
+
     + '<div class="panel"><div class="panel__head"><h2 class="panel__title">Export what is on screen</h2></div>'
     + '<p class="panel__note panel__note--tight">This page keeps the client requirement and your comparison in this browser only. It does not reach another person or another device, so copy anything you need to keep.</p>'
     + '<div class="formgrid"><label class="field needs__span">'
@@ -1026,27 +1232,49 @@ function renderData(){
 }
 
 function parseCatalogue(text){
-  const lines = text.trim().split(/\r?\n/).filter(l=>l.trim());
-  if(!lines.length) return { error:"Nothing to load." };
-  let start = lines[0].toLowerCase().replace(/\s/g,"") === CSV_HEADER ? 1 : 0;
+  const rows = parseCsv(text);
+  if(!rows.length) return { error:"Nothing to load." };
+  const first = rows[0].map(x=>x.trim().toLowerCase()).join(",");
+  const start = first === CSV_HEADER ? 1 : 0;
   const out = [], bad = [];
-  for(let i=start;i<lines.length;i++){
-    const c = lines[i].split(",").map(x=>x.trim());
-    if(c.length < 19){ bad.push(i+1); continue; }
-    if(!GBB.includes(c[4])){ bad.push(i+1); continue; }
-    if(!CATNAME[c[2]]){ bad.push(i+1); continue; }
+  for(let i=start;i<rows.length;i++){
+    const c = rows[i].map(x=>String(x == null ? "" : x).trim());
+    const at = k => c[CSV_COLS.indexOf(k)] || "";
+    if(c.length < 6){ bad.push(i+1); continue; }
+    if(!GBB.includes(at("position"))){ bad.push(i+1); continue; }
+    if(!CATNAME[at("category")]){ bad.push(i+1); continue; }
+    if(!at("sku")){ bad.push(i+1); continue; }
     const n = v => { const x = parseFloat(v); return isNaN(x) ? 0 : x; };
-    const risk = ["Low","Moderate","High"].includes(c[13]) ? c[13] : null;
+    const risk = ["Low","Moderate","High"].indexOf(at("pressure_risk")) !== -1 ? at("pressure_risk") : null;
+    const funding = at("funding").split(";").map(x=>x.trim()).filter(Boolean);
+    const accessories = at("accessories").split(";").map(x=>x.trim()).filter(Boolean).map(pair=>{
+      const bits = pair.split(":");
+      return { sku:(bits[0]||"").trim(), why:(bits.slice(1).join(":") || "a matched pairing").trim() };
+    }).filter(a=>a.sku);
     out.push({
-      sku:c[0], name:c[1], cat:c[2], family:c[3], gbb:c[4], price:n(c[5]),
-      swl:n(c[6]), seatW:n(c[7]) || null, weight:n(c[8]),
-      folds:/^(y|yes|true|1)$/i.test(c[9]),
-      env:["Indoor","Outdoor","Both"].includes(c[10]) ? c[10] : "Both",
-      propel:["Self","Attendant"].includes(c[11]) ? c[11] : "n/a",
-      support:["Hands","Forearms","Seated"].includes(c[12]) ? c[12] : "n/a",
-      risk, need:c[14], diff:c[15], value:c[16], limits:c[17],
-      req:["Required","Optional","Local"].includes(c[18]) ? c[18] : "Optional"
+      sku:at("sku"), name:at("name"), cat:at("category"), family:at("family"),
+      gbb:at("position"), price:n(at("price")), swl:n(at("swl_kg")),
+      seatW:n(at("seat_width_mm")) || null,
+      overallWidth:n(at("overall_width_mm")) || null,
+      handleMin:n(at("handle_min_mm")) || null,
+      handleMax:n(at("handle_max_mm")) || null,
+      weight:n(at("product_weight_kg")),
+      folds:/^(y|yes|true|1)$/i.test(at("folds")),
+      env:["Indoor","Outdoor","Both"].indexOf(at("environment")) !== -1 ? at("environment") : "Both",
+      propel:["Self","Attendant"].indexOf(at("propulsion")) !== -1 ? at("propulsion") : "n/a",
+      support:["Hands","Forearms","Seated"].indexOf(at("support")) !== -1 ? at("support") : "n/a",
+      risk, funding:funding.length ? funding : FUNDING.slice(),
+      need:at("customer_need"), diff:at("functional_difference"), value:at("customer_value"),
+      limits:at("limitations") || "Not stated",
+      objection:at("objection") || "Not written yet.",
+      competitor:at("competitor") || "Not written yet.",
+      accessories, image:null,
+      req:["Required","Optional","Local"].indexOf(at("range_status")) !== -1 ? at("range_status") : "Optional"
     });
+  }
+  if(out.length){
+    const missingHandle = out.filter(x=>x.handleMin && !x.handleMax);
+    missingHandle.forEach(x=>{ x.handleMax = x.handleMin; });
   }
   if(!out.length) return { error:"No usable rows. Check the column order, the category code and the Good, Better or Best position." };
   return { products:out, bad };
@@ -1088,8 +1316,11 @@ function render(){
   document.getElementById("view-compare").innerHTML = renderCompare();
   document.getElementById("view-range").innerHTML = renderRange();
   document.getElementById("view-showroom").innerHTML = renderShowroom();
+  document.getElementById("view-gaps").innerHTML = renderGaps();
   document.getElementById("view-data").innerHTML = renderData();
   renderTray();
+  const gc = document.getElementById("cntGaps");
+  if(gc) gc.textContent = allGaps().filter(g=>g.status === "Open").length;
 
   const banner = document.getElementById("dataBanner");
   if(STATE.meta.isSample){
@@ -1112,7 +1343,7 @@ function render(){
 function setView(v){
   STATE.view = v;
   document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected", String(t.dataset.view === v)));
-  ["match","compare","range","showroom","data"].forEach(k=>{
+  ["match","compare","range","showroom","gaps","data"].forEach(k=>{
     document.getElementById("view-"+k).hidden = (k !== v);
   });
   saveState();
@@ -1122,8 +1353,9 @@ function setView(v){
 function readNeed(){
   const g = id => { const el = document.getElementById(id); return el ? el.value : null; };
   const n = STATE.need;
-  const map = { n_cat:"cat", n_weight:"userWeight", n_seatWidth:"seatWidth", n_env:"env",
-                n_transport:"transport", n_propel:"propel", n_wrists:"wrists", n_risk:"risk", n_budget:"budget" };
+  const map = { n_cat:"cat", n_weight:"userWeight", n_seatWidth:"seatWidth", n_doorway:"doorway",
+                n_handleHeight:"handleHeight", n_env:"env", n_transport:"transport", n_propel:"propel",
+                n_wrists:"wrists", n_risk:"risk", n_funding:"funding", n_budget:"budget" };
   Object.keys(map).forEach(id=>{ const v = g(id); if(v !== null) n[map[id]] = v; });
   const sr = g("n_showroom"); if(sr) STATE.showroom = sr;
 }
@@ -1136,6 +1368,20 @@ document.addEventListener("change", ev=>{
     if(t.checked){ if(!STATE.tray.includes(sku)) STATE.tray.push(sku); }
     else STATE.tray = STATE.tray.filter(k=>k!==sku);
     syncPicks();
+    return;
+  }
+  if(t.dataset.status && t.dataset.id){
+    setRecordStatus(t.dataset.status, t.dataset.id, t.value);
+    return;
+  }
+  if(t.dataset.photo && t.files && t.files[0]){
+    const sku = t.dataset.photo;
+    const hint = document.querySelector('[data-phint="'+sku+'"]');
+    if(hint){ hint.textContent = "Uploading"; hint.style.color = "var(--ink-muted)"; }
+    uploadImage(sku, t.files[0]).then(err=>{
+      const h = document.querySelector('[data-phint="'+sku+'"]');
+      if(h){ h.textContent = err || "Saved"; h.style.color = err ? "var(--crit)" : "var(--delta-up)"; }
+    });
     return;
   }
   if(t.id === "csvFile" && t.files && t.files[0]){
@@ -1156,6 +1402,41 @@ document.addEventListener("click", ev=>{
   if(t.id === "clearTray"){ STATE.tray = []; syncPicks(); return; }
   if(t.id === "goCompare"){ setView("compare"); window.scrollTo({top:0,behavior:"smooth"}); return; }
 
+  if(t.id === "logGapBtn"){ logGap(); return; }
+  if(t.dataset.addacc){
+    const sku = t.dataset.addacc;
+    if(!STATE.tray.includes(sku)) STATE.tray.push(sku);
+    syncPicks();
+    return;
+  }
+  if(t.dataset.report){
+    const sku = t.dataset.report;
+    const g = sel => { const el = document.querySelector('[' + sel + '="' + sku + '"]'); return el ? el.value.trim() : ""; };
+    const hint = document.querySelector('[data-rhint="' + sku + '"]');
+    const value = g("data-rvalue");
+    if(!value){
+      if(hint){ hint.textContent = "Say what the value should be."; hint.style.color = "var(--crit)"; }
+      return;
+    }
+    submitFlag(sku, g("data-rfield"), value, g("data-rnote")).then(ok=>{
+      const h = document.querySelector('[data-rhint="' + sku + '"]');
+      if(!h) return;
+      h.textContent = ok ? "Reported. " + sharedWhere() : "That did not send.";
+      h.style.color = ok ? "var(--delta-up)" : "var(--crit)";
+    });
+    return;
+  }
+  if(t.dataset.remove && t.dataset.id){ removeRecord(t.dataset.remove, t.dataset.id); return; }
+  if(t.id === "exportGaps"){
+    const box = document.getElementById("gapExportBox");
+    if(box){
+      const wrap = document.getElementById("gapExportWrap");
+      if(wrap) wrap.hidden = false;
+      box.value = gapExportText();
+      box.select();
+    }
+    return;
+  }
   if(t.id === "clearNeed"){
     STATE.need = Object.assign({}, BLANK_NEED);
     STATE.tray = [];
@@ -1202,7 +1483,8 @@ document.addEventListener("click", ev=>{
         "Showroom: " + ((SHOWROOMS.find(s=>s.id===STATE.showroom)||{}).name || STATE.showroom), ""];
       if(!active.length) lines.push("Nothing recorded.");
       active.forEach(c=>{
-        const v = { weight:n.userWeight+" kg", seat:n.seatWidth+" mm", risk:n.risk, propel:n.propel,
+        const v = { weight:n.userWeight+" kg", seat:n.seatWidth+" mm", doorway:n.doorway+" mm",
+                    handle:n.handleHeight+" mm", funding:n.funding, risk:n.risk, propel:n.propel,
                     wrists:"Cannot take weight through hands or wrists", env:n.env, fold:n.transport,
                     lift:"Must be lifted into a car unaided", budget:money(+n.budget) }[c.id];
         lines.push("- " + c.label + ": " + v);
@@ -1237,12 +1519,302 @@ document.addEventListener("click", ev=>{
   }
 });
 
+
+/* ============================================================
+   Shared layer: range gaps, specification reports and product
+   photos. Shared across the organisation when the page is served
+   with a database, on this device only when it is not. Either way
+   the page works.
+   ============================================================ */
+const SHARED = {
+  db:null, user:null, assets:null, canEdit:false, uid:null,
+  gaps:[], flags:[], images:{}, error:null, checked:false
+};
+
+function lsGet(key, fallback){
+  try{ const v = localStorage.getItem(LSKEY+"."+key); return v ? JSON.parse(v) : fallback; }catch(e){ return fallback; }
+}
+function lsSet(key, value){
+  try{ localStorage.setItem(LSKEY+"."+key, JSON.stringify(value)); }catch(e){}
+}
+
+function allGaps(){ return SHARED.db ? SHARED.gaps : lsGet("gaps", []); }
+function allFlags(){ return SHARED.db ? SHARED.flags : lsGet("flags", []); }
+function sharedWhere(){
+  return SHARED.db
+    ? "Shared with everyone who can open this page."
+    : "Kept in this browser only. It does not reach another person or another device.";
+}
+
+async function initShared(){
+  const use = (window.claude && typeof window.claude.use === "function") ? window.claude.use.bind(window.claude) : null;
+  if(use){
+    try{ SHARED.db = await use("db"); }catch(e){ SHARED.db = null; }
+    try{ SHARED.user = await use("user"); }catch(e){ SHARED.user = null; }
+    try{ SHARED.assets = await use("assets"); }catch(e){ SHARED.assets = null; }
+  }
+  SHARED.checked = true;
+  if(SHARED.user){
+    try{ SHARED.canEdit = await SHARED.user.canEdit(); }catch(e){ SHARED.canEdit = false; }
+    try{ SHARED.uid = await SHARED.user.id(); }catch(e){ SHARED.uid = null; }
+  }
+  if(SHARED.db){
+    const onErr = e => { SHARED.error = e && e.code; refreshShared("gaps"); };
+    try{
+      SHARED.db.collection("gaps").orderBy("createdAt","desc").limit(300).onSnapshot(snap=>{
+        SHARED.gaps = snap.docs.map(d=>Object.assign({ id:d.id }, d.data()));
+        refreshShared("gaps");
+      }, onErr);
+      SHARED.db.collection("flags").orderBy("createdAt","desc").limit(300).onSnapshot(snap=>{
+        SHARED.flags = snap.docs.map(d=>Object.assign({ id:d.id }, d.data()));
+        refreshShared("gaps");
+      }, onErr);
+      SHARED.db.doc("catalogue/images").onSnapshot(snap=>{
+        const d = snap.exists ? snap.data() : null;
+        SHARED.images = (d && d.map) || {};
+        refreshShared("images");
+      }, onErr);
+    }catch(e){ SHARED.error = "invalid_argument"; }
+  } else {
+    SHARED.images = lsGet("images", {});
+  }
+  refreshShared("all");
+}
+
+let sharedRenderPending = false;
+function refreshShared(kind){
+  if(kind === "images" || kind === "all"){
+    if(sharedRenderPending) return;
+    sharedRenderPending = true;
+    setTimeout(()=>{ sharedRenderPending = false; render(); }, 0);
+    return;
+  }
+  const view = document.getElementById("view-gaps");
+  if(view) view.innerHTML = renderGaps();
+  const c = document.getElementById("cntGaps");
+  if(c) c.textContent = allGaps().filter(g=>g.status === "Open").length;
+}
+
+function requirementSnapshot(){
+  const n = STATE.need;
+  return CRITERIA.filter(c=>c.active(n)).map(c=>({
+    label:c.label,
+    value:{ weight:n.userWeight+" kg", seat:n.seatWidth+" mm", doorway:n.doorway+" mm",
+            handle:n.handleHeight+" mm", funding:n.funding, risk:n.risk, propel:n.propel,
+            wrists:"Cannot take weight through hands or wrists", env:n.env,
+            fold:n.transport === "Lift" ? "Must be lifted into a car unaided" : "Must fold to fit in a car",
+            lift:"Must be lifted into a car unaided", budget:money(+n.budget) }[c.id] || "recorded"
+  }));
+}
+
+async function logGap(){
+  const n = STATE.need;
+  const results = assess(n);
+  const report = gapReport(n, results);
+  if(!report.any) return;
+  const missing = report.impossible;
+  const sr = SHOWROOMS.find(x=>x.id===STATE.showroom);
+  const rec = {
+    createdAt:new Date().toISOString(),
+    showroom:STATE.showroom,
+    showroomName:sr ? sr.name : STATE.showroom,
+    category:n.cat === "ALL" ? "All four categories" : CATNAME[n.cat],
+    kind:missing.length ? "Requirements nothing in the range meets" : "No single product meets the combination",
+    requirement:requirementSnapshot(),
+    missing:missing.map(m=>({ label:m.label, hard:!!m.hard,
+      nearestSku:m.nearest ? m.nearest.sku : "", nearestName:m.nearest ? m.nearest.name : "",
+      detail:m.detail || "" })),
+    nearest:report.nearest.map(x=>({ sku:x.product.sku, name:x.product.name, missed:x.missed })),
+    note:"",
+    status:"Open",
+    loggedBy:SHARED.uid || "",
+    sample:!!STATE.meta.isSample
+  };
+  const btn = document.getElementById("logGapBtn");
+  if(btn){ btn.disabled = true; btn.textContent = "Saving"; }
+  if(SHARED.db){
+    try{ await SHARED.db.collection("gaps").add(rec); }
+    catch(e){
+      if(btn){ btn.disabled = false; btn.textContent = "Log this gap"; }
+      const note = document.getElementById("gapSaveNote");
+      if(note) note.textContent = e && e.code === "quota_exceeded"
+        ? "The gap log is full. Export and clear reviewed gaps before logging more."
+        : "That did not save. You may not have permission to write to the shared log.";
+      return;
+    }
+  } else {
+    const list = lsGet("gaps", []);
+    rec.id = "g" + Date.now();
+    list.unshift(rec);
+    lsSet("gaps", list);
+  }
+  if(btn){ btn.textContent = "Logged"; }
+  refreshShared("gaps");
+  const note = document.getElementById("gapSaveNote");
+  if(note) note.textContent = "Logged. " + sharedWhere();
+}
+
+async function submitFlag(sku, field, value, note){
+  const rec = {
+    createdAt:new Date().toISOString(), sku, name:(PBYSKU[sku]||{}).name || sku,
+    field, value, note, status:"Open", showroom:STATE.showroom,
+    loggedBy:SHARED.uid || "", sample:!!STATE.meta.isSample
+  };
+  if(SHARED.db){
+    try{ await SHARED.db.collection("flags").add(rec); }catch(e){ return false; }
+  } else {
+    const list = lsGet("flags", []);
+    rec.id = "f" + Date.now();
+    list.unshift(rec);
+    lsSet("flags", list);
+  }
+  refreshShared("gaps");
+  return true;
+}
+
+async function setRecordStatus(kind, id, status){
+  if(SHARED.db){
+    try{ await SHARED.db.collection(kind).doc(id).update({ status }); }catch(e){}
+  } else {
+    const key = kind === "gaps" ? "gaps" : "flags";
+    const list = lsGet(key, []);
+    const row = list.find(x=>x.id === id);
+    if(row){ row.status = status; lsSet(key, list); }
+  }
+  refreshShared("gaps");
+}
+
+async function removeRecord(kind, id){
+  if(SHARED.db){
+    try{ await SHARED.db.collection(kind).doc(id).delete(); }catch(e){}
+  } else {
+    const key = kind === "gaps" ? "gaps" : "flags";
+    lsSet(key, lsGet(key, []).filter(x=>x.id !== id));
+  }
+  refreshShared("gaps");
+}
+
+/* ---------- product photos ---------- */
+function imageFor(p){
+  const id = SHARED.images[p.sku];
+  if(id) return "/_blob/" + id;
+  if(p.image) return p.image;
+  return null;
+}
+function thumb(p){
+  const src = imageFor(p);
+  if(src) return '<img class="thumb" src="'+esc(src)+'" alt="'+esc(p.name)+'" loading="lazy">';
+  return '<span class="thumb thumb--empty" aria-hidden="true">'+esc(p.cat)+'</span>';
+}
+async function uploadImage(sku, file){
+  if(!SHARED.assets) return "Photo upload is not available on this view.";
+  let res;
+  try{ res = await SHARED.assets.upload(file); }
+  catch(e){ return "That photo did not upload."; }
+  const next = Object.assign({}, SHARED.images);
+  next[sku] = res.id;
+  if(SHARED.db){
+    try{ await SHARED.db.doc("catalogue/images").set({ map: next }); }
+    catch(e){ return "Uploaded, but it could not be saved against the product."; }
+  } else {
+    SHARED.images = next;
+    lsSet("images", next);
+  }
+  SHARED.images = next;
+  render();
+  return null;
+}
+
+/* ---------- accessories ---------- */
+function accessoriesFor(p){
+  return (p.accessories || []).map(a=>({ product:PBYSKU[a.sku], why:a.why })).filter(a=>a.product);
+}
+
+/* ---------- gaps and reports view ---------- */
+function renderGaps(){
+  const list = allGaps(), flags = allFlags();
+  const open = list.filter(g=>g.status === "Open");
+  const byCat = {};
+  list.forEach(g=>{ byCat[g.category] = (byCat[g.category] || 0) + 1; });
+
+  const where = '<div class="caveat"><strong>Where this is kept.</strong> ' + sharedWhere()
+    + (SHARED.db ? "" : " Give the page a shared database if you want gaps from every showroom in one list.")
+    + (SHARED.error ? " The shared log reported an error and may be out of date." : "")
+    + '</div>';
+
+  const counts = Object.keys(byCat).length
+    ? '<div class="legend">' + Object.keys(byCat).sort().map(k=>'<span class="legend__item"><span class="chip">'+esc(k)+' '+byCat[k]+'</span></span>').join("") + '</div>'
+    : "";
+
+  const gapRows = list.length ? list.map(g=>
+    '<tr><td>'+esc((g.createdAt||"").slice(0,10))+'<span class="sku">'+esc(g.showroomName||g.showroom||"")+'</span></td>'
+    + '<td>'+esc(g.category||"")+'</td>'
+    + '<td>'+(g.requirement||[]).map(r=>esc(r.label)+": "+esc(r.value)).join("<br>")+'</td>'
+    + '<td>'+((g.missing||[]).length
+        ? (g.missing||[]).map(m=>'<strong>'+esc(m.label)+'</strong>'
+            + (m.nearestName ? '<span class="sku">closest: '+esc(m.nearestName)+', '+esc(m.detail)+'</span>' : '')).join("<br>")
+        : '<strong>'+esc(g.kind || "No single product meets the combination")+'</strong>'
+          + (g.nearest||[]).map(x=>'<span class="sku">closest: '+esc(x.name)+(x.missed&&x.missed.length?', short on '+esc(x.missed.join("; ")):'')+'</span>').join(""))+'</td>'
+    + '<td>'+(g.sample ? '<span class="chip chip--warn"><span class="chip__dot"></span>Sample data</span>' : '')
+    + '<select data-status="gaps" data-id="'+esc(g.id)+'" aria-label="Status">'
+    +   ["Open","Reviewed","Actioned","Not a gap"].map(o=>'<option'+(o===g.status?" selected":"")+'>'+o+'</option>').join("")
+    + '</select></td>'
+    + '<td><button class="iconbtn" data-remove="gaps" data-id="'+esc(g.id)+'">Remove</button></td></tr>'
+  ).join("") : '<tr><td colspan="6" class="empty">No range gaps logged yet. When nothing in the range meets a client requirement, log it from the client needs tab and it will build up here.</td></tr>';
+
+  const flagRows = flags.length ? flags.map(f=>
+    '<tr><td>'+esc((f.createdAt||"").slice(0,10))+'</td>'
+    + '<td>'+esc(f.name||f.sku)+'<span class="sku">'+esc(f.sku)+'</span></td>'
+    + '<td>'+esc(f.field)+'</td><td>'+esc(f.value||"")+'</td><td>'+esc(f.note||"")+'</td>'
+    + '<td><select data-status="flags" data-id="'+esc(f.id)+'" aria-label="Status">'
+    +   ["Open","Checked","Corrected","No change"].map(o=>'<option'+(o===f.status?" selected":"")+'>'+o+'</option>').join("")
+    + '</select></td>'
+    + '<td><button class="iconbtn" data-remove="flags" data-id="'+esc(f.id)+'">Remove</button></td></tr>'
+  ).join("") : '<tr><td colspan="7" class="empty">No specification reports. Staff can report a spec that looks wrong from any product card.</td></tr>';
+
+  return where
+    + '<div class="panel"><div class="panel__head"><h2 class="panel__title">Range gaps</h2>'
+    +   '<span class="chip '+(open.length?"chip--crit":"chip--ok")+'"><span class="chip__dot"></span>'+open.length+' open</span></div>'
+    + '<p class="panel__note panel__note--tight">Every time nothing in the range meets a client requirement, that is evidence for a range decision. Logged gaps carry the requirement, the closest product and what it fell short by.</p>'
+    + counts
+    + '<div class="tablewrap"><table><thead><tr><th>Logged</th><th>Category</th><th>Client requirement</th>'
+    + '<th>What the range could not meet</th><th>Status</th><th></th></tr></thead><tbody>'+gapRows+'</tbody></table></div>'
+    + '<div class="btnrow"><button class="btn btn--ghost" id="exportGaps" type="button">Build export</button></div>'
+    + '<div class="formgrid" style="margin-top:12px"><label class="field needs__span" id="gapExportWrap" hidden>'
+    +   '<textarea id="gapExportBox" readonly style="min-height:110px;font-family:var(--mono);font-size:11px"></textarea></label></div></div>'
+    + '<div class="panel"><div class="panel__head"><h2 class="panel__title">Specification reports</h2>'
+    +   '<span class="chip">'+flags.filter(f=>f.status==="Open").length+' open</span></div>'
+    + '<p class="panel__note panel__note--tight">A spec that looks wrong on the floor is usually a catalogue that has gone stale. This is how it gets back to you.</p>'
+    + '<div class="tablewrap"><table><thead><tr><th>Reported</th><th>Product</th><th>Field</th>'
+    + '<th>What it should be</th><th>Note</th><th>Status</th><th></th></tr></thead><tbody>'+flagRows+'</tbody></table></div></div>';
+}
+
+function gapExportText(){
+  const list = allGaps();
+  const lines = ["Range gaps", "Exported " + new Date().toISOString().slice(0,10),
+    "Source: " + STATE.meta.source + (STATE.meta.isSample ? " - SAMPLE VALUES, NOT THE AIDACARE CATALOGUE" : ""), ""];
+  if(!list.length){ lines.push("Nothing logged."); return lines.join("\n"); }
+  list.forEach(g=>{
+    lines.push((g.createdAt||"").slice(0,10) + "  " + (g.showroomName||"") + "  " + (g.category||"") + "  [" + (g.status||"Open") + "]");
+    (g.requirement||[]).forEach(r=>lines.push("    needed: " + r.label + " " + r.value));
+    if((g.missing||[]).length){
+      (g.missing||[]).forEach(m=>lines.push("    not met: " + m.label + (m.nearestName ? "  (closest: " + m.nearestName + ", " + m.detail + ")" : "")));
+    } else {
+      lines.push("    not met: " + (g.kind || "no single product meets the combination"));
+    }
+    (g.nearest||[]).forEach(x=>lines.push("    closest: " + x.name + (x.missed && x.missed.length ? " - short on " + x.missed.join("; ") : "")));
+    lines.push("");
+  });
+  return lines.join("\n");
+}
+
 /* ---------- start ---------- */
 (function init(){
   try{ const th = localStorage.getItem(LSKEY+".theme"); if(th) document.documentElement.setAttribute("data-theme", th); }catch(e){}
   loadState();
   render();
   setView(STATE.view || "match");
+  initShared();
 })();
 </script>
 </body>
